@@ -1652,7 +1652,6 @@ static void disk_events_workfn(struct work_struct *work)
 	intv = disk_events_poll_jiffies(disk);
 	if (!ev->block && intv)
 		queue_delayed_work(system_freezable_power_efficient_wq, &ev->dwork, intv);
-
 	spin_unlock_irq(&ev->lock);
 
 	/*
