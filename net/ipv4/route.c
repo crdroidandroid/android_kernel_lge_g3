@@ -3533,7 +3533,7 @@ int __init ip_rt_init(void)
 	devinet_init();
 	ip_fib_init();
 
-	INIT_DELAYED_WORK_DEFERRABLE(&expires_work, rt_worker_func);
+	INIT_DEFERRABLE_WORK(&expires_work, rt_worker_func);
 	expires_ljiffies = jiffies;
 	queue_delayed_work(system_power_efficient_wq,&expires_work,
 		net_random() % ip_rt_gc_interval + ip_rt_gc_interval);
