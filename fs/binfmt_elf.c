@@ -150,6 +150,7 @@ static void get_atrandom_bytes(unsigned char *buf, size_t nbytes)
 		nbytes -= chunk;
 	}
 }
+
 static int
 create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 		unsigned long load_addr, unsigned long interp_load_addr)
