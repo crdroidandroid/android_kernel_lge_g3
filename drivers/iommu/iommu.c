@@ -897,6 +897,7 @@ int iommu_map_range(struct iommu_domain *domain, unsigned int iova,
 
 	return domain->ops->map_range(domain, iova, sg, len, prot);
 }
+
 EXPORT_SYMBOL_GPL(iommu_map_range);
 
 int iommu_unmap_range(struct iommu_domain *domain, unsigned int iova,
@@ -931,4 +932,4 @@ static int __init iommu_init(void)
 
 	return 0;
 }
-subsys_initcall(iommu_init);
+arch_initcall(iommu_init);
