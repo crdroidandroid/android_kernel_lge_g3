@@ -73,11 +73,6 @@ int spmi_add_controller(struct spmi_controller *ctrl)
 
 	pr_debug("adding controller for bus %d (0x%p)\n", ctrl->nr, ctrl);
 
-	if (ctrl->nr & ~MAX_IDR_MASK) {
-		pr_err("invalid bus identifier %d\n", ctrl->nr);
-		return -EINVAL;
-	}
-
 retry:
 	if (idr_pre_get(&ctrl_idr, GFP_KERNEL) == 0) {
 		pr_err("no free memory for idr\n");
