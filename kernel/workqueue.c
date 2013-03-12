@@ -268,9 +268,9 @@ EXPORT_SYMBOL_GPL(system_freezable_power_efficient_wq);
 			   lockdep_is_held(&workqueue_lock),		\
 			   "sched RCU or workqueue lock should be held")
 
-#define for_each_std_worker_pool(pool, cpu)				\
-	for ((pool) = &per_cpu(cpu_std_worker_pools, cpu)[0];		\
-	     (pool) < &per_cpu(cpu_std_worker_pools, cpu)[NR_STD_WORKER_POOLS]; \
+#define for_each_cpu_worker_pool(pool, cpu)				\
+	for ((pool) = &per_cpu(cpu_worker_pools, cpu)[0];		\
+	     (pool) < &per_cpu(cpu_worker_pools, cpu)[NR_STD_WORKER_POOLS]; \
 	     (pool)++)
 
 #define for_each_busy_worker(worker, i, pos, pool)			\
@@ -436,7 +436,7 @@ static bool workqueue_freezing;		/* W: have wqs started freezing? */
  * POOL_DISASSOCIATED set, and their workers have WORKER_UNBOUND set.
  */
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct worker_pool [NR_STD_WORKER_POOLS],
-				     cpu_std_worker_pools);
+				     cpu_worker_pools);
 
 /*
  * idr of all pools.  Modifications are protected by workqueue_lock.  Read
@@ -3317,12 +3317,13 @@ static struct worker_pool *get_unbound_pool(const struct workqueue_attrs *attrs)
 	u32 hash = wqattrs_hash(attrs);
 	struct worker_pool *pool;
 	struct worker *worker;
+	struct hlist_node *tmp;
 
 	mutex_lock(&create_mutex);
 
 	/* do we already have a matching pool? */
 	spin_lock_irq(&workqueue_lock);
-	hash_for_each_possible(unbound_pool_hash, pool, hash_node, hash) {
+	hash_for_each_possible(unbound_pool_hash, pool, tmp, hash_node, hash) {
 		if (wqattrs_equal(pool->attrs, attrs)) {
 			pool->refcnt++;
 			goto out_unlock;
@@ -3377,7 +3378,7 @@ static int alloc_and_link_pwqs(struct workqueue_struct *wq)
 			struct pool_workqueue *pwq =
 				per_cpu_ptr(wq->cpu_pwqs, cpu);
 			struct worker_pool *cpu_pools =
-				per_cpu(cpu_std_worker_pools, cpu);
+				per_cpu(cpu_worker_pools, cpu);
 
 			pwq->pool = &cpu_pools[highpri];
 			list_add_tail_rcu(&pwq->pwqs_node, &wq->pwqs);
@@ -3738,7 +3739,7 @@ static void wq_unbind_fn(struct work_struct *work)
 	struct hlist_node *pos;
 	int i;
 
-	for_each_std_worker_pool(pool, cpu) {
+	for_each_cpu_worker_pool(pool, cpu) {
 		WARN_ON_ONCE(cpu != smp_processor_id());
 
 		mutex_lock(&pool->assoc_mutex);
@@ -3762,33 +3763,30 @@ static void wq_unbind_fn(struct work_struct *work)
 		spin_unlock_irq(&pool->lock);
 		mutex_unlock(&pool->assoc_mutex);
 
+
+	}
+
 		/*
 		 * Call schedule() so that we cross rq->lock and thus can
 		 * guarantee sched callbacks see the %WORKER_UNBOUND flag.
 		 * This is necessary as scheduler callbacks may be invoked
 		 * from other cpus.
 		 */
-		schedule();
+	schedule();
 
-		/*
-		 * Sched callbacks are disabled now.  Zap nr_running.
-		 * After this, nr_running stays zero and need_more_worker()
-		 * and keep_working() are always true as long as the
-		 * worklist is not empty.  This pool now behaves as an
-		 * unbound (in terms of concurrency management) pool which
-		 * are served by workers tied to the pool.
-		 */
+	/*
+	 * Sched callbacks are disabled now.  Zap nr_running.  After this,
+	 * nr_running stays zero and need_more_worker() and keep_working()
+	 * are always true as long as the worklist is not empty.  Pools on
+	 * @cpu now behave as unbound (in terms of concurrency management)
+	 * pools which are served by workers tied to the CPU.
+	 *
+	 * On return from this function, the current worker would trigger
+	 * unbound chain execution of pending work items if other workers
+	 * didn't already.
+	 */
+	for_each_cpu_worker_pool(pool, cpu)
 		atomic_set(&pool->nr_running, 0);
-
-		/*
-		 * With concurrency management just turned off, a busy
-		 * worker blocking could lead to lengthy stalls.  Kick off
-		 * unbound chain execution of currently pending work items.
-		 */
-		spin_lock_irq(&pool->lock);
-		wake_up_worker(pool);
-		spin_unlock_irq(&pool->lock);
-	}
 }
 
 /*
@@ -3804,7 +3802,7 @@ static int __cpuinit workqueue_cpu_up_callback(struct notifier_block *nfb,
 
 	switch (action & ~CPU_TASKS_FROZEN) {
 	case CPU_UP_PREPARE:
-		for_each_std_worker_pool(pool, cpu) {
+		for_each_cpu_worker_pool(pool, cpu) {
 			struct worker *worker;
 
 			if (pool->nr_workers)
@@ -3822,7 +3820,7 @@ static int __cpuinit workqueue_cpu_up_callback(struct notifier_block *nfb,
 
 	case CPU_DOWN_FAILED:
 	case CPU_ONLINE:
-		for_each_std_worker_pool(pool, cpu) {
+		for_each_cpu_worker_pool(pool, cpu) {
 			mutex_lock(&pool->assoc_mutex);
 			spin_lock_irq(&pool->lock);
 
@@ -4062,7 +4060,7 @@ static int __init init_workqueues(void)
 		struct worker_pool *pool;
 
 		i = 0;
-		for_each_std_worker_pool(pool, cpu) {
+		for_each_cpu_worker_pool(pool, cpu) {
 			BUG_ON(init_worker_pool(pool));
 			pool->cpu = cpu;
 			cpumask_copy(pool->attrs->cpumask, cpumask_of(cpu));
@@ -4077,7 +4075,7 @@ static int __init init_workqueues(void)
 	for_each_online_cpu(cpu) {
 		struct worker_pool *pool;
 
-		for_each_std_worker_pool(pool, cpu) {
+		for_each_cpu_worker_pool(pool, cpu) {
 			struct worker *worker;
 
 			pool->flags &= ~POOL_DISASSOCIATED;
