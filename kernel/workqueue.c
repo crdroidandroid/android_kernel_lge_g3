@@ -469,20 +469,18 @@ static void copy_workqueue_attrs(struct workqueue_attrs *to,
 
 /* allocate ID and assign it to @pool */
 static int worker_pool_assign_id(struct worker_pool *pool)
-{
-	int ret;
+  {
+	  int ret;
 
-	do {
-		if (!idr_pre_get(&worker_pool_idr, GFP_KERNEL))
-			return -ENOMEM;
+	  lockdep_assert_held(&wq_pool_mutex);
 
-		spin_lock_irq(&workqueue_lock);
-		ret = idr_get_new(&worker_pool_idr, pool, &pool->id);
-		spin_unlock_irq(&workqueue_lock);
-	} while (ret == -EAGAIN);
-
-	return ret;
-}
+	  ret = idr_alloc(&worker_pool_idr, pool, 0, 0, GFP_KERNEL);
+	  if (ret >= 0) {
+		  pool->id = ret;
+		  return 0;
+	  }
+	  return ret;
+   }
 
 /**
  * first_pwq - return the first pool_workqueue of the specified workqueue
