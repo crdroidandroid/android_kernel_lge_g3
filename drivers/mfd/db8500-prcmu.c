@@ -1906,6 +1906,30 @@ static void set_clock_rate(u8 clock, unsigned long rate)
 	spin_unlock_irqrestore(&clk_mgt_lock, flags);
 }
 
+<<<<<<< HEAD
+=======
+static int set_armss_rate(unsigned long rate)
+{
+	int i = 0;
+
+	/* cpufreq table frequencies is in KHz. */
+	rate = rate / 1000;
+
+	/* Find the corresponding arm opp from the cpufreq table. */
+	while (db8500_cpufreq_table[i].frequency != CPUFREQ_TABLE_END) {
+		if (db8500_cpufreq_table[i].frequency == rate)
+			break;
+		i++;
+	}
+
+	if (db8500_cpufreq_table[i].frequency != rate)
+		return -EINVAL;
+
+	/* Set the new arm opp. */
+	return db8500_prcmu_set_arm_opp(db8500_cpufreq_table[i].driver_data);
+}
+
+>>>>>>> 6e8433e... cpufreq: rename index as driver_data in cpufreq_frequency_table
 static int set_plldsi_rate(unsigned long rate)
 {
 	unsigned long src_rate;
@@ -2954,6 +2978,35 @@ static struct mfd_cell db8500_prcmu_devs[] = {
 	},
 };
 
+<<<<<<< HEAD
+=======
+static void db8500_prcmu_update_cpufreq(void)
+{
+	if (prcmu_has_arm_maxopp()) {
+		db8500_cpufreq_table[3].frequency = 1000000;
+		db8500_cpufreq_table[3].driver_data = ARM_MAX_OPP;
+	}
+}
+
+static int db8500_prcmu_register_ab8500(struct device *parent,
+					struct ab8500_platform_data *pdata,
+					int irq)
+{
+	struct resource ab8500_resource = DEFINE_RES_IRQ(irq);
+	struct mfd_cell ab8500_cell = {
+		.name = "ab8500-core",
+		.of_compatible = "stericsson,ab8500",
+		.id = AB8500_VERSION_AB8500,
+		.platform_data = pdata,
+		.pdata_size = sizeof(struct ab8500_platform_data),
+		.resources = &ab8500_resource,
+		.num_resources = 1,
+	};
+
+	return mfd_add_devices(parent, 0, &ab8500_cell, 1, NULL, 0, NULL);
+}
+
+>>>>>>> 6e8433e... cpufreq: rename index as driver_data in cpufreq_frequency_table
 /**
  * prcmu_fw_init - arch init call for the Linux PRCMU fw init logic
  *

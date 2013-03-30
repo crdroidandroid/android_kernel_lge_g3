@@ -94,7 +94,7 @@ static int powernow_k6_get_cpu_multiplier(void)
 
 	local_irq_enable();
 
-	return clock_ratio[register_to_index[(invalue >> 5)&7]].index;
+	return clock_ratio[register_to_index[(invalue >> 5)&7]].driver_data;
 }
 
 static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
@@ -139,14 +139,18 @@ static void powernow_k6_set_state(unsigned int best_i)
 {
 	struct cpufreq_freqs freqs;
 
-	if (clock_ratio[best_i].index > max_multiplier) {
+	if (clock_ratio[best_i].driver_data > max_multiplier) {
 		printk(KERN_ERR PFX "invalid target frequency\n");
 		return;
 	}
 
 	freqs.old = busfreq * powernow_k6_get_cpu_multiplier();
+<<<<<<< HEAD
 	freqs.new = busfreq * clock_ratio[best_i].index;
 	freqs.cpu = 0; /* powernow-k6.c is UP only driver */
+=======
+	freqs.new = busfreq * clock_ratio[best_i].driver_data;
+>>>>>>> 6e8433e... cpufreq: rename index as driver_data in cpufreq_frequency_table
 
 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
 
@@ -249,7 +253,7 @@ have_busfreq:
 
 	/* table init */
 	for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
-		f = clock_ratio[i].index;
+		f = clock_ratio[i].driver_data;
 		if (f > max_multiplier)
 			clock_ratio[i].frequency = CPUFREQ_ENTRY_INVALID;
 		else
