@@ -2296,7 +2296,6 @@ void kmsg_dump(enum kmsg_dump_reason reason)
 		l2 = log_next_idx - idx;
 	}
 	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
-
 	rcu_read_lock();
 	list_for_each_entry_rcu(dumper, &dump_list, list)
 		dumper->dump(dumper, reason, s1, l1, s2, l2);
