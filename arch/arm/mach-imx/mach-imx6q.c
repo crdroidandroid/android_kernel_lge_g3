@@ -88,9 +88,36 @@ static void __init imx6q_init_machine(void)
 
 static void __init imx6q_map_io(void)
 {
+<<<<<<< HEAD
 	imx_lluart_map_io();
 	imx_scu_map_io();
 	imx6q_clock_map_io();
+=======
+	struct device_node *np;
+	void __iomem *base;
+	u32 val;
+
+	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
+	if (!np) {
+		pr_warn("failed to find ocotp node\n");
+		return;
+	}
+
+	base = of_iomap(np, 0);
+	if (!base) {
+		pr_warn("failed to map ocotp\n");
+		goto put_node;
+	}
+
+	val = readl_relaxed(base + OCOTP_CFG3);
+	val >>= OCOTP_CFG3_SPEED_SHIFT;
+	if ((val & 0x3) != OCOTP_CFG3_SPEED_1P2GHZ)
+		if (dev_pm_opp_disable(cpu_dev, 1200000000))
+			pr_warn("failed to disable 1.2 GHz OPP\n");
+
+put_node:
+	of_node_put(np);
+>>>>>>> 95ea368... PM / OPP: rename functions to dev_pm_opp*
 }
 
 static int __init imx6q_gpio_add_irq_domain(struct device_node *np,
