@@ -19,6 +19,10 @@
 #include <linux/of_address.h>
 #include <linux/of_irq.h>
 #include <linux/of_platform.h>
+<<<<<<< HEAD
+=======
+#include <linux/pm_opp.h>
+>>>>>>> 14c16e0... PM / OPP: rename header to linux/pm_opp.h
 #include <linux/phy.h>
 #include <linux/micrel_phy.h>
 #include <asm/smp_twd.h>

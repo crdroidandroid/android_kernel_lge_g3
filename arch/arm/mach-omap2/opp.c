@@ -17,7 +17,12 @@
  * GNU General Public License for more details.
  */
 #include <linux/module.h>
+<<<<<<< HEAD
 #include <linux/opp.h>
+=======
+#include <linux/pm_opp.h>
+#include <linux/cpu.h>
+>>>>>>> 14c16e0... PM / OPP: rename header to linux/pm_opp.h
 
 #include <plat/omap_device.h>
 

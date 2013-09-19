@@ -23,7 +23,12 @@
 #include <linux/gpio.h>
 #include <linux/input.h>
 #include <linux/gpio_keys.h>
+<<<<<<< HEAD
 #include <linux/opp.h>
+=======
+#include <linux/pm_opp.h>
+#include <linux/cpu.h>
+>>>>>>> 14c16e0... PM / OPP: rename header to linux/pm_opp.h
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/partitions.h>
