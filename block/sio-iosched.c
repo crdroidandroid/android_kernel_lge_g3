@@ -23,8 +23,8 @@
 enum { ASYNC, SYNC };
 
 /* Tunables */
-static const int sync_read_expire  = HZ / 2;        /* max time before a sync read is submitted. */
-static const int sync_write_expire = 2 * HZ;        /* max time before a sync write is submitted. */
+static const int sync_read_expire  = 1000;	/* max time before a sync read is submitted. */
+static const int sync_write_expire = 5000;	/* max time before a sync write is submitted. */
 
 static const int async_read_expire  =  4 * HZ;        /* ditto for async, these limits are SOFT! */
 static const int async_write_expire = 16 * HZ;        /* ditto for async, these limits are SOFT! */
@@ -81,18 +81,6 @@ sio_add_request(struct request_queue *q, struct request *rq)
         rq_set_fifo_time(rq, jiffies + sd->fifo_expire[sync][data_dir]);
         list_add_tail(&rq->queuelist, &sd->fifo_list[sync][data_dir]);
 }
-
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,38)
-static int
-sio_queue_empty(struct request_queue *q)
-{
-        struct sio_data *sd = q->elevator->elevator_data;
-
-        /* Check if fifo lists are empty */
-        return list_empty(&sd->fifo_list[SYNC][READ]) && list_empty(&sd->fifo_list[SYNC][WRITE]) &&
-               list_empty(&sd->fifo_list[ASYNC][READ]) && list_empty(&sd->fifo_list[ASYNC][WRITE]);
-}
-#endif
 
 static struct request *
 sio_expired_request(struct sio_data *sd, int sync, int data_dir)
@@ -358,30 +346,25 @@ static struct elv_fs_entry sio_attrs[] = {
 };
 
 static struct elevator_type iosched_sio = {
-        .ops = {
-                .elevator_merge_req_fn                = sio_merged_requests,
-                .elevator_dispatch_fn                = sio_dispatch_requests,
-                .elevator_add_req_fn                = sio_add_request,
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,38)
-                .elevator_queue_empty_fn        = sio_queue_empty,
-#endif
-                .elevator_former_req_fn                = sio_former_request,
-                .elevator_latter_req_fn                = sio_latter_request,
-                .elevator_init_fn                = sio_init_queue,
-                .elevator_exit_fn                = sio_exit_queue,
-        },
+	.ops = {
+		.elevator_merge_req_fn		= sio_merged_requests,
+		.elevator_dispatch_fn		= sio_dispatch_requests,
+		.elevator_add_req_fn		= sio_add_request,
+		.elevator_former_req_fn		= sio_former_request,
+		.elevator_latter_req_fn		= sio_latter_request,
+		.elevator_init_fn		= sio_init_queue,
+		.elevator_exit_fn		= sio_exit_queue,
+	},
 
-        .elevator_attrs = sio_attrs,
-        .elevator_name = "sio",
-        .elevator_owner = THIS_MODULE,
+	.elevator_attrs = sio_attrs,
+	.elevator_name = "sio",
+	.elevator_owner = THIS_MODULE,
 };
 
 static int __init sio_init(void)
 {
-        /* Register elevator */
-        elv_register(&iosched_sio);
-
-        return 0;
+	/* Register elevator */
+	return elv_register(&iosched_sio);
 }
 
 static void __exit sio_exit(void)
