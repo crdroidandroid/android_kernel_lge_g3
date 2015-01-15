@@ -3,7 +3,11 @@
 # Linux/arm 3.4.113 Kernel Configuration
 #
 <<<<<<< HEAD:arch/arm/configs/lineageos_d850_defconfig
+<<<<<<< HEAD:arch/arm/configs/lineageos_d850_defconfig
 =======
+=======
+CONFIG_SIMPLE_GPU_ALGORITHM=y
+>>>>>>> 9780252... Simple GPU Algorithm: Initial coding for devfreq based Adreno Drivers:arch/arm/configs/cyanogenmod_d850_defconfig
 CONFIG_TOUCHSCREEN_SWEEP2WAKE=y
 CONFIG_CPU_VOLTAGE_TABLE=y
 CONFIG_SOUND_CONTROL_HAX_3_GPL=y
