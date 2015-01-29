@@ -615,6 +615,15 @@ hw_rev_type lge_get_board_revno(void)
 {
     return lge_bd_rev;
 }
+#if defined(CONFIG_LCD_KCAL)
+/* LGE_CHANGE_S
+* change code for LCD KCAL
+* 2013-05-08, seojin.lee@lge.com
+*/
+int g_kcal_r = 242;
+int g_kcal_g = 237;
+int g_kcal_b = 255;
+#endif
 
 #ifdef CONFIG_LGE_PM_BATTERY_ID_CHECKER
 struct lge_battery_id_platform_data lge_battery_id_plat = {
