@@ -390,7 +390,7 @@ KBUILD_CFLAGS   := -Wall -DNDEBUG -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-                   -Wno-unused-variable \
+           -Wno-unused-variable \
 		   -Wno-misleading-indentation \
 		   -Wno-int-in-bool-context \
 		   -fno-delete-null-pointer-checks \
@@ -403,6 +403,7 @@ KBUILD_CFLAGS   := -Wall -DNDEBUG -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -ffast-math -fsingle-precision-constant \
 		   -fgcse-lm -fgcse-sm -fsched-spec-load -fforce-addr \
 		   -std=gnu89
+
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
