@@ -95,6 +95,12 @@
         mem-addr = <0x0d800000>;
         mem-size = <0xc00000>;
     };
+    
+    	kexec_hardboot-hole {
+		compatible = "qcom,msm-contig-mem";
+		qcom,memblock-reserve = <0xDD800000 0x1000>;
+	};
+
 
 	/* label: i2c_0 (label defined in msm8974.dtsi) */
 	i2c@f9967000 {
