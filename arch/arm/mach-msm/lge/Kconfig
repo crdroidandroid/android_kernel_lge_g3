@@ -66,5 +66,4 @@ config SHITTY_VARIANT
 	  This flag will allow these variants to opt out of the code tha causes the
 	  section mismatches and allow them to continue on with their presumably shitty
 	  existance and gcc 4.8.
-
 endmenu
