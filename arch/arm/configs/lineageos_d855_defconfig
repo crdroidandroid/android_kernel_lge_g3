@@ -1,3 +1,4 @@
+<<<<<<< HEAD:arch/arm/configs/lineageos_d855_defconfig
 #
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm 3.4.113 Kernel Configuration
@@ -3767,3 +3768,4 @@ CONFIG_SOUND_CONTROL_HAX_3_GPL=y
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
 CONFIG_SIMPLE_GPU_ALGORITHM=y
 CONFIG_POWERSUSPEND=y
+CONFIG_ADRENO_IDLER=y

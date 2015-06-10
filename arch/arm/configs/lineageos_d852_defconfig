@@ -1,3 +1,4 @@
+<<<<<<< HEAD:arch/arm/configs/lineageos_d852_defconfig
 #
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm 3.4.113 Kernel Configuration
@@ -8,6 +9,9 @@
 =======
 =======
 =======
+=======
+CONFIG_ADRENO_IDLER=y
+>>>>>>> 95556ef... Adreno idler by @arter97 - Idling algorithm.:arch/arm/configs/cyanogenmod_d852_defconfig
 CONFIG_POWERSUSPEND=y
 >>>>>>> 8a579af... Powersuspend: Introduce New Powersuspendm Multi Commits:arch/arm/configs/cyanogenmod_d852_defconfig
 CONFIG_SIMPLE_GPU_ALGORITHM=y
