@@ -1,7 +1,4 @@
-#
-# Automatically generated file; DO NOT EDIT.
-# Linux/arm 3.4.0 Kernel Configuration
-#
+CONFIG_ADRENO_IDLER=y
 CONFIG_POWERSUSPEND=y
 CONFIG_SIMPLE_GPU_ALGORITHM=y
 CONFIG_TOUCHSCREEN_SWEEP2WAKE=y
