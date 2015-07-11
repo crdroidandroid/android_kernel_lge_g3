@@ -24,6 +24,7 @@
 #include <linux/display_state.h>
 
 #include "mdss_dsi.h"
+#include "mdss_livedisplay.h"
 #ifdef CONFIG_MFD_TPS65132
 #include <linux/mfd/tps65132.h>
 #endif
@@ -174,7 +175,7 @@ u32 mdss_dsi_panel_cmd_read(struct mdss_dsi_ctrl_pdata *ctrl, char cmd0,
 	return 0;
 }
 
-static void mdss_dsi_panel_cmds_send(struct mdss_dsi_ctrl_pdata *ctrl,
+void mdss_dsi_panel_cmds_send(struct mdss_dsi_ctrl_pdata *ctrl,
 			struct dsi_panel_cmds *pcmds)
 {
 	struct dcs_cmd_req cmdreq;
@@ -629,6 +630,9 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 		ctrl->set_sharpening(ctrl, ctrl->shared_pdata.sharpening_state,
 			(void *) 1);
 #endif
+
+	mdss_livedisplay_update(ctrl, MODE_UPDATE_ALL);
+
 	pr_debug("%s:-\n", __func__);
 	return 0;
 }
@@ -786,7 +790,7 @@ static void mdss_dsi_parse_trigger(struct device_node *np, char *trigger,
 }
 
 
-static int mdss_dsi_parse_dcs_cmds(struct device_node *np,
+int mdss_dsi_parse_dcs_cmds(struct device_node *np,
 		struct dsi_panel_cmds *pcmds, char *cmd_key, char *link_key)
 {
 	const char *data;
@@ -1583,6 +1587,7 @@ static int mdss_panel_parse_dt(struct device_node *np,
 	mdss_dsi_parse_dcs_cmds(np, &lge_ief_off_cmds, "qcom,panel-ief-off-cmds", "qcom,ief-off-dsi-state");
 #endif
 	mdss_dsi_parse_dfps_config(np, ctrl_pdata);
+
 #ifdef CONFIG_LGE_SHARPENING
 	mdss_dsi_parse_dcs_cmds(np, &ctrl_pdata->sharpening_on,
 		"qcom,mdss-dsi-sharpening-on", "qcom,mdss-dsi-sharpening-mode");
@@ -1592,6 +1597,8 @@ static int mdss_panel_parse_dt(struct device_node *np,
 	/* Change to 'false' if LG ever decides to disable by default */
 	ctrl_pdata->shared_pdata.sharpening_state = true;
 #endif
+
+	mdss_livedisplay_parse_dt(np, pinfo);
 
 	return 0;
 
