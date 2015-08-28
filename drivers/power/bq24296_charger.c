@@ -43,6 +43,9 @@
 #include <linux/kthread.h>
 #include <linux/timer.h>
 #endif
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
 
 #define I2C_SUSPEND_WORKAROUND
 #if defined(CONFIG_CHARGER_UNIFIED_WLC)
@@ -645,10 +648,25 @@ static int bq24296_set_input_i_limit(struct bq24296_chip *chip, int ma)
 	}
 #endif
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	// Reapply current charge level if we have one
+	if (force_fast_charge    != FAST_CHARGE_DISABLED &&
+	    current_charge_level != NOT_FAST_CHARGING       )
+		ma = current_charge_level;
+
+	// Use the level below the requested current to stay safe
+	for (i = ARRAY_SIZE(icl_ma_table) - 1; i >= 0; i--) {
+		if (icl_ma_table[i].icl_ma <= ma)
+			break;
+	}
+#else
+
 	for (i = ARRAY_SIZE(icl_ma_table) - 1; i > 0; i--) {
 		if (ma >= icl_ma_table[i].icl_ma)
 			break;
 	}
+#endif // CONFIG_FORCE_FAST_CHARGE
+
 	temp = icl_ma_table[i].value;
 
 	pr_info("input current limit=%d setting 0x%02x\n", ma, temp);
