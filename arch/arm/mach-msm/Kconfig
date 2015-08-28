@@ -3051,6 +3051,15 @@ config KRAIT_REGULATOR
 	 line from the PMIC. This supply line is powered by multiple
 	 regulators running in ganged mode inside the PMIC. Enable
 	 this option to support such configurations.
+
+config FORCE_FAST_CHARGE
+	bool "Force fast charging (AC/USB)"
+	default n
+	help
+	  A simple sysfs interface to force adapters that
+	  are detected as USB to charge as AC (1A/h) or to set
+	  custom charging currents for AC and USB.
+
 endif
 
 config KERNEL_TEXT_MPU_PROT
