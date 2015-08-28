@@ -25,6 +25,10 @@
 #include "io.h"
 #include "xhci.h"
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
+
 #ifdef CONFIG_LGE_PM
 #include <mach/board_lge.h>
 #include <linux/power_supply.h>
@@ -583,6 +587,13 @@ static int dwc3_otg_set_power(struct usb_phy *phy, unsigned mA)
 		return 0;
 	}
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	/* Remember we stopped charging */
+	if (dotg->charger->charging_disabled ||
+	    mA == 0)
+		current_charge_level = NOT_FAST_CHARGING;
+#endif // CONFIG_FORCE_FAST_CHARGE
+
 	if (dotg->charger->charging_disabled)
 		return 0;
 
@@ -658,6 +669,35 @@ static int dwc3_otg_set_power(struct usb_phy *phy, unsigned mA)
 
 	if (dotg->charger->chg_type == DWC3_CDP_CHARGER)
 		mA = DWC3_IDEV_CHG_MAX;
+
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	/* Use Fast charge currents accroding to user settings */
+	/* DWC3_IDEV_CHG_MAX = 1500 / DWC3_IDEV_CHG_MIN = 500 */
+	if (force_fast_charge == FAST_CHARGE_FORCE_AC) {/* We are in basic Fast Charge mode, so we substitute AC to USB levels */
+		switch(dotg->charger->chg_type) {
+			case DWC3_SDP_CHARGER:		// standard downstream port
+			case DWC3_CDP_CHARGER:		// charging downstream port
+							mA = USB_CHARGE_1000;      /* Apply usual 1A/h AC level fastcharge to USB */
+							current_charge_level = mA; /* Remember we are fast charging */
+							break;
+			default:			break; /* Don't do anything for any other kind of connections */
+		}
+	} else if (force_fast_charge == FAST_CHARGE_FORCE_CUSTOM_MA) { /* We are in custom current Fast Charge mode for both AC and USB */
+		switch(dotg->charger->chg_type) {
+			case DWC3_SDP_CHARGER:		// standard downstream port
+			case DWC3_CDP_CHARGER:		// charging downstream port
+							mA = usb_charge_level;     /* These are USB connections, apply custom USB current for all of them */
+							current_charge_level = mA; /* Remember we are fast charging */
+							break;
+			case DWC3_DCP_CHARGER:		// dedicated charging port
+			case DWC3_PROPRIETARY_CHARGER:	mA = ac_charge_level;      /* These are AC connections, apply custom AC current for all of them */
+							current_charge_level = mA; /* Remember we are fast charging */
+							break;
+			default:			/* Don't do anything for any other kind of connections */
+							break;
+		}
+	}
+#endif // CONFIG_FORCE_FAST_CHARGE
 
 	if (dotg->charger->max_power == mA)
 		return 0;
