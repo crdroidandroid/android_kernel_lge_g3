@@ -757,10 +757,7 @@ static int crypt_convert(struct crypt_config *cc,
 		case -EBUSY:
 			wait_for_completion(&ctx->restart);
 			INIT_COMPLETION(ctx->restart);
-			/* fall through*/
-		case -EINPROGRESS:
 			ctx->req = NULL;
-			this_cc->req = NULL;
 			ctx->sector++;
 			continue;
 
