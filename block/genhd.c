@@ -1531,6 +1531,7 @@ static void __disk_unblock_events(struct gendisk *disk, bool check_now)
 		queue_delayed_work(system_freezable_power_efficient_wq, &ev->dwork, 0);
  	else if (intv)
 		queue_delayed_work(system_freezable_power_efficient_wq, &ev->dwork, intv);
+out_unlock:
 	spin_unlock_irqrestore(&ev->lock, flags);
 }
 
