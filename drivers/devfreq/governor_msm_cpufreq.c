@@ -12,7 +12,7 @@
  */
 
 #include <linux/devfreq.h>
-#include <mach/cpufreq.h>
+#include <soc/qcom/cpufreq.h>
 #include "governor.h"
 
 DEFINE_MUTEX(df_lock);
