@@ -147,13 +147,6 @@ config CPU_FREQ_DEFAULT_GOV_LIONHEART
 	help
 	  Use the CPUFreq governor 'lionheart' as default.
 
-config CPU_FREQ_DEFAULT_GOV_INTELLIMM
-        bool "intelliminmax"
-        select CPU_FREQ_GOV_INTELLIMM
-        help
-          Use the CPUFreq governor 'intelliminmax' as default. This is
-          governor will use only 3 different frequencies, idle, UI and max
-
 config CPU_FREQ_DEFAULT_GOV_ZZMOOVE
 	  bool "zzmoove"
 	  select CPU_FREQ_GOV_ZZMOOVE
@@ -162,6 +155,18 @@ config CPU_FREQ_DEFAULT_GOV_ZZMOOVE
 	  Use the CPUFreq governor 'zzmoove' as default, using predefined
 	  frequency lookup tables and optimized scaling triggers instead of
 	  % frequency steps to get smooth up/downscaling dependant on CPU load.
+
+config CPU_FREQ_DEFAULT_GOV_NIGHTMARE
+	bool "nightmare"
+	select CPU_FREQ_GOV_NIGHTMARE
+	help
+
+config CPU_FREQ_DEFAULT_GOV_SLIM
+	bool "slim"
+	select CPU_FREQ_GOV_SLIM
+	select CPU_FREQ_GOV_PERFORMANCE
+	help
+	  Use the CPUFreq governor 'slim' as default.
 
 config CPU_FREQ_DEFAULT_GOV_SMARTMAX
         bool "smartmax"
@@ -331,6 +336,13 @@ config CPU_FREQ_GOV_INTELLIMM
 
 config CPU_FREQ_GOV_ZZMOOVE
 	tristate "'zzmoove' cpufreq governor"
+
+config CPU_FREQ_GOV_NIGHTMARE
+	tristate "'nightmare' cpufreq governor"
+	depends on CPU_FREQ
+
+config CPU_FREQ_GOV_LIONHEART
+	tristate "'lionheart' cpufreq governor"
 	depends on CPU_FREQ
 	help
 	  'zzmoove' - based on cpufreq_conservative, using predefined
