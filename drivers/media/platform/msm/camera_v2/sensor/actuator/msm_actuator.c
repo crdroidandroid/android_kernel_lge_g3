@@ -594,7 +594,6 @@ static int32_t msm_actuator_set_position(
 		pr_err("failed. Invalid actuator state.");
 		return -EFAULT;
 	}
-
 	a_ctrl->i2c_tbl_index = 0;
 	for (index = 0; index < set_pos->number_of_steps; index++) {
 		next_lens_position = set_pos->pos[index];
