@@ -404,6 +404,54 @@ static void q6asm_session_free(struct audio_client *ac)
 	return;
 }
 
+static int q6asm_add_nowait_opcode(struct audio_client *ac, uint32_t opcode)
+{
+	struct asm_no_wait_node		*new_node;
+	unsigned long flags;
+	int ret = 0;
+
+	new_node = kmalloc(sizeof(struct asm_no_wait_node), GFP_ATOMIC);
+	if (new_node == NULL) {
+		ret = -ENOMEM;
+		goto done;
+	}
+	new_node->opcode = opcode;
+	INIT_LIST_HEAD(&new_node->list);
+
+	spin_lock_irqsave(&ac->no_wait_que_spinlock, flags);
+	list_add_tail(&new_node->list, &ac->no_wait_que);
+	spin_unlock_irqrestore(&ac->no_wait_que_spinlock, flags);
+
+done:
+	return ret;
+}
+
+static bool q6asm_remove_nowait_opcode(struct audio_client *ac,
+						uint32_t opcode)
+{
+	struct list_head		*ptr, *next;
+	struct asm_no_wait_node		*node;
+	unsigned long flags;
+	bool ret = false;
+
+	spin_lock_irqsave(&ac->no_wait_que_spinlock, flags);
+	list_for_each_safe(ptr, next, &ac->no_wait_que) {
+		node = list_entry(ptr,
+			struct asm_no_wait_node, list);
+		if (node->opcode == opcode) {
+			list_del(&node->list);
+			kfree(node);
+			ret = true;
+			goto done;
+		}
+	}
+
+	pr_debug("%s: nowait opcode NOT found 0x%x\n", __func__, opcode);
+done:
+	spin_unlock_irqrestore(&ac->no_wait_que_spinlock, flags);
+	return ret;
+}
+
 static uint32_t q6asm_get_next_buf(struct audio_client *ac,
 		uint32_t curr_buf, uint32_t max_buf_cnt)
 {
