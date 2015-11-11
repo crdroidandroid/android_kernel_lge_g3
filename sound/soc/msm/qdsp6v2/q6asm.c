@@ -386,12 +386,22 @@ static bool q6asm_is_valid_audio_client(struct audio_client *ac)
 
 static void q6asm_session_free(struct audio_client *ac)
 {
+	struct list_head		*ptr, *next;
+	struct asm_no_wait_node		*node;
+
 	pr_debug("%s: sessionid[%d]\n", __func__, ac->session);
 	rtac_remove_popp_from_adm_devices(ac->session);
 	session[ac->session] = 0;
 	ac->session = 0;
 	ac->perf_mode = LEGACY_PCM_MODE;
 	ac->fptr_cache_ops = NULL;
+
+	list_for_each_safe(ptr, next, &ac->no_wait_que) {
+		node = list_entry(ptr, struct asm_no_wait_node, list);
+		list_del(&node->list);
+		kfree(node);
+	}
+	list_del(&ac->no_wait_que);
 	return;
 }
 
@@ -768,7 +778,12 @@ void q6asm_audio_client_free(struct audio_client *ac)
 {
 	int loopcnt;
 	struct audio_port_data *port;
-	if (!ac || !ac->session)
+	if (!ac) {
+		pr_err("%s: ac %p\n", __func__, ac);
+		return;
+	}
+	if (!ac->session) {
+		pr_err("%s: ac session invalid\n", __func__);
 		return;
 
 	mutex_lock(&session_lock);
@@ -784,14 +799,14 @@ void q6asm_audio_client_free(struct audio_client *ac)
 		}
 	}
 
+	rtac_set_asm_handle(ac->session, NULL);
 	apr_deregister(ac->apr2);
-	ac->apr2 = NULL;
 	apr_deregister(ac->apr);
+	q6asm_mmap_apr_dereg();
+	ac->apr2 = NULL;
 	ac->apr = NULL;
 	ac->mmap_apr = NULL;
-	rtac_set_asm_handle(ac->session, ac->apr);
 	q6asm_session_free(ac);
-	q6asm_mmap_apr_dereg();
 
 	pr_debug("%s: APR De-Register\n", __func__);
 
