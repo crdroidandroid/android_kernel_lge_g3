@@ -881,8 +881,6 @@ static int eth_stop(struct net_device *net)
 	spin_lock_irqsave(&dev->lock, flags);
 	if (dev->port_usb) {
 		struct gether	*link = dev->port_usb;
-		const struct usb_endpoint_descriptor *in;
-		const struct usb_endpoint_descriptor *out;
 
 		if (link->close)
 			link->close(link);
@@ -1061,12 +1059,6 @@ int gether_setup_name(struct usb_gadget *g, u8 ethaddr[ETH_ALEN],
 		 */
 		netif_carrier_off(net);
 
-#ifdef CONFIG_USB_G_LGE_ANDROID
-		dev->cpufreq_notifier.notifier_call =
-			gether_cpufreq_notifier_cb;
-		cpufreq_register_notifier(&dev->cpufreq_notifier,
-				CPUFREQ_POLICY_NOTIFIER);
-#endif
 	}
 
 	return status;
