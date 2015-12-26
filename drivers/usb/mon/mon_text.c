@@ -396,7 +396,8 @@ static ssize_t mon_text_read_t(struct file *file, char __user *buf,
 	struct mon_text_ptr ptr;
 	ssize_t ret;
 
-	if (IS_ERR(ep = mon_text_read_wait(rp, file)))
+	ep = mon_text_read_wait(rp, file);
+	if (IS_ERR(ep))
 		return PTR_ERR(ep);
 	mutex_lock(&rp->printf_lock);
 
@@ -437,7 +438,8 @@ static ssize_t mon_text_read_u(struct file *file, char __user *buf,
 	struct mon_text_ptr ptr;
 	ssize_t ret;
 
-	if (IS_ERR(ep = mon_text_read_wait(rp, file)))
+	ep = mon_text_read_wait(rp, file);
+	if (IS_ERR(ep))
 		return PTR_ERR(ep);
 	mutex_lock(&rp->printf_lock);
 
