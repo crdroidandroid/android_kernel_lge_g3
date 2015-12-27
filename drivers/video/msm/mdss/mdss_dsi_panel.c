@@ -631,8 +631,6 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 			(void *) 1);
 #endif
 
-	mdss_livedisplay_update(ctrl, MODE_UPDATE_ALL);
-
 	pr_debug("%s:-\n", __func__);
 	return 0;
 }

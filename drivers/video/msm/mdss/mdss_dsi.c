@@ -31,9 +31,10 @@ bool scr_suspended;
 #include "mdss_panel.h"
 #include "mdss_dsi.h"
 #include "mdss_debug.h"
+
 #ifdef CONFIG_MACH_LGE
 #include <mach/board_lge.h>
-
+#include "mdss_livedisplay.h"
 #define NUM_MAX_VREG 3
 extern struct mdss_panel_data *pdata_base;
 #endif
@@ -873,6 +874,10 @@ static int mdss_dsi_unblank(struct mdss_panel_data *pdata)
 		}
 	}
 #endif
+
+	mdss_livedisplay_update(pdata->panel_info.livedisplay,
+			MODE_UPDATE_ALL);
+
 	pr_debug("%s-:\n", __func__);
 
 	return ret;
