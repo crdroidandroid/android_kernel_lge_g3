@@ -622,11 +622,14 @@ config LGE_PM_USB_CURRENT_MAX_MODE
 	default n
 	depends on MACH_LGE
 	help
-	  Say Y to enable LGE PM USB current max mode
-	  for MST, Auto Testing with USB
-
-config LGE_THERMALE_CHG_CONTROL
-	bool "LG charger thermal control"
-	default n
+		Say Y to enable support for smart charging
+		
+config FORCE_FAST_CHARGE
+ 	bool "Force fast charging (AC/USB)"
+ 	default n
+ 	help
+ 	  A simple sysfs interface to force adapters that
+ 	  are detected as USB to charge as AC (1A/h) or to set
+ 	  custom charging currents for AC and USB.		
 
 endif # POWER_SUPPLY
