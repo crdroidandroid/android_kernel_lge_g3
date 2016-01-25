@@ -194,11 +194,6 @@ config CPU_FREQ_DEFAULT_GOV_NIGHTMARE
 	select CPU_FREQ_GOV_NIGHTMARE
 	help		
 
-config CPU_FREQ_DEFAULT_GOV_NIGHTMARE
-	bool "nightmare"
-	select CPU_FREQ_GOV_NIGHTMARE
-	help
-
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
