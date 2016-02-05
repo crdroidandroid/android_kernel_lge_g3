@@ -51,6 +51,9 @@ static char rt_ert_flag;
 static char formatting_dir;
 static unsigned char sig_blend = CTRL_ON;
 static DEFINE_MUTEX(iris_fm);
+#ifndef MODULE
+static int transport_ready = -1;
+#endif
 
 module_param(rds_buf, uint, 0);
 MODULE_PARM_DESC(rds_buf, "RDS buffer entries: *100*");
@@ -4894,7 +4897,12 @@ static int iris_fops_release(struct file *file)
 	}
 END:
 	if (radio->fm_hdev != NULL)
+	{
 		radio->fm_hdev->close_smd();
+#ifndef MODULE
+		transport_ready = -1;
+#endif
+	}
 	if (retval < 0)
 		FMDERR("Err on disable FM %d\n", retval);
 
@@ -5095,10 +5103,23 @@ static const struct v4l2_ioctl_ops iris_ioctl_ops = {
 	.vidioc_g_ext_ctrls           = iris_vidioc_g_ext_ctrls,
 };
 
+#ifndef MODULE
+extern int radio_hci_smd_init(void);
+static int iris_fops_open(struct file *f) {
+	if (transport_ready < 0) {
+		transport_ready = radio_hci_smd_init();
+	}
+	return transport_ready;
+}
+#endif
+
 static const struct v4l2_file_operations iris_fops = {
 	.owner = THIS_MODULE,
 	.unlocked_ioctl = video_ioctl2,
 	.release        = iris_fops_release,
+#ifndef MODULE
+	.open           = iris_fops_open,
+#endif
 };
 
 static struct video_device iris_viddev_template = {
