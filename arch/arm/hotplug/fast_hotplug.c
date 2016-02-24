@@ -195,7 +195,7 @@ static int get_slowest_cpu(void){
 	return slowest_cpu;
 }
 
-static void plug_in(int online_cpu_count){
+static void __ref plug_in(int online_cpu_count){
 	int cpu;
 
 	if(online_cpu_count >= max_cpu_on)
@@ -385,7 +385,7 @@ static struct input_handler hotplug_input_handler = {
 	.id_table       = hotplug_ids,
 };
 
-static int enable_fast_hotplug(const char *val, const struct kernel_param *kp){
+static int __ref enable_fast_hotplug(const char *val, const struct kernel_param *kp){
 	int cpu;
 	int ret = param_set_bool(val, kp);
 	int rc;
