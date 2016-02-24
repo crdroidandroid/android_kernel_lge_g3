@@ -1,4 +1,4 @@
-/* arch/arm/mach-msm/cpufreq.c
+/* drivers/cpufreq/qcom-cpufreq.c
  *
  * MSM architecture cpufreq driver
  *
@@ -126,6 +126,16 @@ static void update_l2_bw(int *also_cpu)
 out:
 	mutex_unlock(&l2bw_lock);
 }
+
+struct cpu_freq {
+	uint32_t max;
+	uint32_t min;
+	uint32_t allowed_max;
+	uint32_t allowed_min;
+	uint32_t limits_init;
+};
+
+static DEFINE_PER_CPU(struct cpu_freq, cpu_freq_info);
 
 static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq,
 			unsigned int index)
@@ -281,7 +291,7 @@ static inline int msm_cpufreq_limits_init(void)
 
 	for_each_possible_cpu(cpu) {
 		limit = &per_cpu(cpu_freq_info, cpu);
-	table = cpufreq_frequency_get_table(cpu);
+		table = cpufreq_frequency_get_table(cpu);
 		if (table == NULL) {
 			pr_err("%s: error reading cpufreq table for cpu %d\n",
 					__func__, cpu);
@@ -330,7 +340,6 @@ int msm_cpufreq_set_freq_limits(uint32_t cpu, uint32_t min, uint32_t max)
 	return 0;
 }
 EXPORT_SYMBOL(msm_cpufreq_set_freq_limits);
-
 static int __cpuinit msm_cpufreq_init(struct cpufreq_policy *policy)
 {
 	int cur_freq;
