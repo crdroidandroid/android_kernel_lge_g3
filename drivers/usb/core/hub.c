@@ -2341,7 +2341,6 @@ static int hub_port_wait_reset(struct usb_hub *hub, int port1,
 				udev->speed = USB_SPEED_LOW;
 			else
 				udev->speed = USB_SPEED_FULL;
->>>>>>> los/cm-14.1
 			return 0;
 		}
 
