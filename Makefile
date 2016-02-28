@@ -360,6 +360,10 @@ CFLAGS_KERNEL	= $(KERNELFLAGS) -fpredictive-commoning
 AFLAGS_KERNEL	= $(KERNELFLAGS)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
+# ACC Optimizations
+ACC_FLAGS	= -pipe -marm -mcpu=cortex-a15 -mtune=cortex-a15 -mfloat-abi=softfp -mfpu=neon-vfpv4
+ACC_FLAGS	+= -Wno-unused -Wno-maybe-uninitialized
+ACC_FLAGS	+= --param l1-cache-size=32 --param l1-cache-line-size=32 --param l2-cache-size=2048
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
@@ -380,7 +384,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   $(KERNELFLAGS)
 KBUILD_AFLAGS_KERNEL := $(KERNELFLAGS)
 KBUILD_CFLAGS_KERNEL := $(KERNELFLAGS)
-KBUILD_AFLAGS   := -D__ASSEMBLY__
+KBUILD_AFLAGS   := -D__ASSEMBLY__ $(ACC_FLAGS)
 KBUILD_AFLAGS_MODULE  := $(MODFLAGS)
 KBUILD_CFLAGS_MODULE  := $(MODFLAGS)
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
