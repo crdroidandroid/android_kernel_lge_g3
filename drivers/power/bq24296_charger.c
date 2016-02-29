@@ -2985,20 +2985,6 @@ static void pma_workaround_worker(struct work_struct *work)
 		pr_err("[WLC] unset pma wake lock\n");
 	}
 }
-
-static void pma_workaround(struct bq24296_chip *chip, int temp)
-{
-	if (temp >= 55) {
-		gpio_set_value(chip->otg_en, 1);
-		bq24296_enable_otg(chip, true);
-		pr_err("[WLC] set pma workaround\n");
-
-		schedule_delayed_work(&chip->pma_workaround_work, 15 * HZ);
-		wake_lock(&chip->pma_workaround_wake_lock);
-		pr_err("[WLC] set pma wake lock\n");
-		pr_err("[WLC] after 15sec, unset pma workaround\n");
-	}
-}
 #endif
 
 static int temp_before;
