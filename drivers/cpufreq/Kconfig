@@ -227,8 +227,14 @@ config CPU_FREQ_DEFAULT_GOV_TRIPNDROID
 	bool "tripndroid"
 	select CPU_FREQ_GOV_TRIPNDROID
 	help
-	  Select tripndroid cpu governor as default
-   			
+	  Select tripndroid cpu governor as default 
+
+config CPU_FREQ_DEFAULT_GOV_RAGINGMOLASSES
+   	bool "ragingmolasses"
+   	select CPU_FREQ_GOV_RAGINGMOLASSES
+   	help
+   	  Select ragingmolasses cpu governor as default
+   	    		
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -476,6 +482,19 @@ config CPU_FREQ_GOV_TRIPNDROID
 	  Custom cpu governor designed specificly for multi cpu mobile devices.
 	  Aiming at a balance between performance and battery lifetime, but it
 	  hangs a little bit more towards performance at low latencys.
+	  
+config CPU_FREQ_GOV_RAGINGMOLASSES
+	tristate "'RAGINGMOLASSES' cpufreq policy governor"
+	help
+	  'RAGINGMOLASSES' - This driver adds a cpufreq policy governor 
+	  much along the lines of ondemand but tries to keep to low 
+	  frequencies without hurting performance for workloads that need it.
+	  To compile this driver as a module, choose M here: the
+	  module will be called cpufreq_interactive.
+
+	  For details, take a look at linux/Documentation/cpu-freq.
+
+	  If in doubt, say N0.	 	  
           	
 menu "x86 CPU frequency scaling drivers"
 depends on X86

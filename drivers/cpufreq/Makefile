@@ -28,6 +28,7 @@ obj-$(CONFIG_CPU_FREQ_GOV_WHEATLEY)	            += cpufreq_wheatley.o
 obj-$(CONFIG_CPU_FREQ_GOV_WAVE)		            += cpufreq_wave.o
 obj-$(CONFIG_CPU_FREQ_GOV_DYNAMIC_INTERACTIVE) 	+= cpufreq_dynamic_interactive.o
 obj-$(CONFIG_CPU_FREQ_GOV_TRIPNDROID)	        += cpufreq_tripndroid.o
+obj-$(CONFIG_CPU_FREQ_GOV_RAGINGMOLASSES)  	+= cpufreq_ragingmolasses.o
 
 # CPUfreq cross-arch helpers
 obj-$(CONFIG_CPU_FREQ_TABLE)		+= freq_table.o
