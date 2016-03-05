@@ -1,11 +1,16 @@
-config MSM_HOTPLUG
-	bool "MSM hotplug driver"
-	depends on HOTPLUG_CPU
-	default y
+config ALUCARD_HOTPLUG
+	bool "Enable alucard-hotplug cpu hotplug driver"
+	default n
 	help
-	  The MSM hotplug driver controls on-/offlining of additional cores based
-	  on current cpu load.
-
+	  Generic Alucard-hotplug cpu hotplug driver for ARM SOCs
+	  
+config BLU_PLUG
+	bool "Dynamic hotplug driver"
+	depends on HOTPLUG_CPU
+	default n
+	help
+	  The Dynamic hotplug driver automatically online/offline CPUs proportional to system load.	  
+  
 config BRICKED_HOTPLUG
 	bool "Enable kernel based mpdecision"
 	depends on MSM_RUN_QUEUE_STATS
@@ -13,6 +18,41 @@ config BRICKED_HOTPLUG
 	help
 	  This enables kernel based multi core control.
 	  (up/down hotplug based on load)
+	  
+config FAST_HOTPLUG
+	bool "Enable fast hotplug"
+	default n
+	help
+	  Kernel based core control.
+	  
+config INTELLI_HOTPLUG
+	bool "Intelli hotplug driver"
+	depends on HOTPLUG_CPU
+	default y
+	help
+	  An intelligent cpu hotplug driver for
+	  Low Latency Frequency Transition capable processors.
+	  
+config MAKO_HOTPLUG
+        bool "Enable mako-hotplug cpu hotplug driver"
+        default n
+        help
+          Generic Intelli-plug cpu hotplug driver for ARM SOCs	 	  		  	  	  
+
+config MSM_HOTPLUG
+	bool "MSM hotplug driver"
+	depends on HOTPLUG_CPU
+	default n
+	help
+	  The MSM hotplug driver controls on-/offlining of additional cores based
+	  on current cpu load.
+	  
+	  
+config THUNDERPLUG_CONTROL
+      bool "Enable plugging down/up of cores using powersuspend"
+      help
+       This driver uses powersuspend to take down the cpu cores
+       on a octa core device. Tuned to work on a quad core device.	  
 
 config ZEN_DECISION
 	bool "Zen Decision: MSM Userspace Handler"
@@ -46,42 +86,3 @@ config ZEN_DECISION
 	  by disabling these services.
 
 	  If unsure, say N.
-	  
-config MAKO_HOTPLUG
-        bool "Enable mako-hotplug cpu hotplug driver"
-        default n
-        help
-          Generic Intelli-plug cpu hotplug driver for ARM SOCs	  
-
-config BLU_PLUG
-	bool "Dynamic hotplug driver"
-	depends on HOTPLUG_CPU
-	default n
-	help
-	  The Dynamic hotplug driver automatically online/offline CPUs proportional to system load.
-	    
-config FAST_HOTPLUG
-	bool "Enable fast hotplug"
-	default n
-	help
-	  Kernel based core control.
-	  
-config ALUCARD_HOTPLUG
-	bool "Enable alucard-hotplug cpu hotplug driver"
-	default n
-	help
-	  Generic Alucard-hotplug cpu hotplug driver for ARM SOCs
-
-config INTELLI_HOTPLUG
-	bool "Intelli hotplug driver"
-	depends on HOTPLUG_CPU
-	default y
-	help
-	  An intelligent cpu hotplug driver for
-	  Low Latency Frequency Transition capable processors.	  
-
-config THUNDERPLUG_CONTROL
-      bool "Enable plugging down/up of cores using powersuspend"
-      help
-       This driver uses powersuspend to take down the cpu cores
-       on a octa core device. Tuned to work on a quad core device.
