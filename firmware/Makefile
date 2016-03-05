@@ -28,8 +28,10 @@ acenic-objs := acenic/tg1.bin acenic/tg2.bin
 endif
 
 synaptics_firmware_subdir := g3
-synaptics_img_file := $(wildcard $(srctree)/firmware/synaptics/$(synaptics_firmware_subdir)/*.img)
-synaptics_img_file += $(wildcard $(srctree)/firmware/synaptics/$(synaptics_firmware_subdir)/*.txt)
+# synaptics_img_file := $(wildcard $(srctree)/firmware/synaptics/$(synaptics_firmware_subdir)/*.img)
+# synaptics_img_file += $(wildcard $(srctree)/firmware/synaptics/$(synaptics_firmware_subdir)/*.txt)
+synaptics_img_file := $(wildcard $(srctree)/firmware/synaptics/$(synaptics_firmware_subdir)/*)
+
 synaptics_firmware := $(subst $(srctree)/firmware/,,$(synaptics_img_file))
 
 fw-shipped-$(CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI4) += $(synaptics_firmware)
@@ -225,11 +227,13 @@ $(patsubst %,$(obj)/%.gen.o, $(fw-external-y)): $(obj)/%.gen.o: $(fwdir)/%
 $(obj)/%: $(obj)/%.ihex | $(objtree)/$(obj)/$$(dir %)
 	$(call cmd,ihex)
 
+ifneq ($(objtree),$(srctree))
 $(obj)/%.img: $(objtree)/$(obj)/$$(dir %.img)
 	$(call cmd,copy)
 
 $(obj)/%.txt: $(objtree)/$(obj)/$$(dir %.txt)
 	$(call cmd,copy)
+endif
 
 # Don't depend on ihex2fw if we're installing and it already exists.
 # Putting it after | in the dependencies doesn't seem sufficient when
