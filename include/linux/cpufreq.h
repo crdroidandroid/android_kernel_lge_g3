@@ -430,6 +430,10 @@ extern struct cpufreq_governor cpufreq_gov_powersave;
 extern struct cpufreq_governor cpufreq_gov_ragingmolasses;
 #define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_ragingmolasses)
 
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SMARTASSV2)
+extern struct cpufreq_governor cpufreq_gov_smartassv2;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_smartassv2)
+
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SLIM)
 extern struct cpufreq_governor cpufreq_gov_slim;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_slim)
