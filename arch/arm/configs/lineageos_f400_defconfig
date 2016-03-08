@@ -1,4 +1,5 @@
 <<<<<<< HEAD:arch/arm/configs/lineageos_f400_defconfig
+<<<<<<< HEAD:arch/arm/configs/lineageos_f400_defconfig
 #
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm 3.4.113 Kernel Configuration
@@ -16,6 +17,13 @@ CONFIG_POWERSUSPEND=y
 >>>>>>> 8a579af... Powersuspend: Introduce New Powersuspendm Multi Commits:arch/arm/configs/cyanogenmod_f400_defconfig
 CONFIG_SIMPLE_GPU_ALGORITHM=y
 >>>>>>> 9780252... Simple GPU Algorithm: Initial coding for devfreq based Adreno Drivers:arch/arm/configs/cyanogenmod_f400_defconfig
+=======
+CONFIG_KEXEC=y
+CONFIG_KEXEC_HARDBOOT=y
+CONFIG_ATAGS_PROC=n
+CONFIG_PROC_DEVICETREE=y
+CONFIG_POWERSUSPEND=y
+>>>>>>> 9da7c3a... devfreq: GPU Govs: Some fix ups and ported from Nebula 1st Edition:arch/arm/configs/cyanogenmod_f400_defconfig
 CONFIG_TOUCHSCREEN_SWEEP2WAKE=y
 CONFIG_CPU_VOLTAGE_TABLE=y
 CONFIG_SOUND_CONTROL_HAX_3_GPL=y
@@ -3292,8 +3300,16 @@ CONFIG_DEVFREQ_GOV_PERFORMANCE=y
 CONFIG_DEVFREQ_GOV_POWERSAVE=y
 CONFIG_DEVFREQ_GOV_USERSPACE=y
 CONFIG_DEVFREQ_GOV_MSM_ADRENO_TZ=y
+CONFIG_ADRENO_IDLER=y
 CONFIG_DEVFREQ_GOV_MSM_CPUFREQ=y
 CONFIG_DEVFREQ_GOV_MSM_CPUBW_HWMON=y
+<<<<<<< HEAD:arch/arm/configs/lineageos_f400_defconfig
+=======
+CONFIG_DEVFREQ_GOV_MSM_CACHE_HWMON=y
+CONFIG_DEVFREQ_GOV_MSM_CPUFREQ=y
+CONFIG_DEVFREQ_GOV_MSM_BW_HWMON=y
+CONFIG_SIMPLE_GPU_ALGORITHM=y
+>>>>>>> 9da7c3a... devfreq: GPU Govs: Some fix ups and ported from Nebula 1st Edition:arch/arm/configs/cyanogenmod_f400_defconfig
 
 #
 # DEVFREQ Drivers
