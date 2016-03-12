@@ -22,7 +22,7 @@
 /*
  * debug = 1 will print all
  */
-static unsigned int debug = 1;
+static unsigned int debug = 0;
 module_param_named(debug_mask, debug, uint, 0644);
 
 static bool state_suspended;
