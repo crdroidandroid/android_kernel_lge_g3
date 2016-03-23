@@ -42,9 +42,6 @@
 #include <linux/mmc/host.h>
 #include <linux/mmc/mmc.h>
 #include <linux/mmc/sd.h>
-#ifdef CONFIG_MMC_FFU
-#include <linux/mmc/ffu.h>
-#endif
 
 #include <asm/uaccess.h>
 
@@ -125,9 +122,6 @@ struct mmc_blk_data {
 #define MMC_BLK_WRITE		BIT(1)
 #define MMC_BLK_DISCARD		BIT(2)
 #define MMC_BLK_SECDISCARD	BIT(3)
-#ifdef CONFIG_LGE_MMC_RESET_IF_HANG
-#define MMC_BLK_FLUSH           BIT(4)
-#endif
 
 	/*
 	 * Only set in main mmc_blk_data associated
@@ -699,33 +693,6 @@ static int mmc_blk_ioctl_cmd(struct block_device *bdev,
 	mmc_rpm_hold(card->host, &card->dev);
 	mmc_claim_host(card->host);
 
-#if defined(CONFIG_MMC_FFU)
-	switch (cmd.opcode) {
-		case MMC_FFU_DOWNLOAD_OP:
-			err = mmc_ffu_download(card, &cmd, idata->buf, idata->buf_bytes);
-			goto cmd_rel_host;
-		case MMC_FFU_INSTALL_OP:
-			err = mmc_ffu_install(card);
-			goto cmd_rel_host;
-		case MMC_FFU_MID_OP:
-			pr_info ("[LGE][FFU][cid : %u]\n", card->cid.manfid);
-			if (copy_to_user((void __user *)(unsigned long) idata->ic.data_ptr,
-						&card->cid.manfid, sizeof(unsigned int)))
-				err = -EFAULT;
-			else
-				err = 0;
-			goto cmd_rel_host;
-		case MMC_FFU_PNM_OP:
-			pr_info ("[LGE][FFU][pnm : %s]\n", card->cid.prod_name);
-			if (copy_to_user((void __user *)(unsigned long) idata->ic.data_ptr,
-						&card->cid.prod_name, idata->ic.blksz))
-				err = -EFAULT;
-			else
-				err = 0;
-			goto cmd_rel_host;
-	}
-#endif
-
 	err = mmc_blk_part_switch(card, md);
 	if (err)
 		goto cmd_rel_host;
@@ -1275,12 +1242,6 @@ static int mmc_blk_reset(struct mmc_blk_data *md, struct mmc_host *host,
 
 	md->reset_done |= type;
 	err = mmc_hw_reset(host);
-#ifdef CONFIG_LGE_MMC_RESET_IF_HANG
-	if (err == -ETIMEDOUT && host->caps & MMC_CAP_NONREMOVABLE) {
-		err = mmc_hw_reset(host);
-		pr_info("%s:%s: retry mmc_blk_reset() %d\n", mmc_hostname(host), __func__, err);
-	}
-#endif
 	/* Ensure we switch back to the correct partition */
 	if (err != -EOPNOTSUPP) {
 		struct mmc_blk_data *main_md = mmc_get_drvdata(host->card);
@@ -1463,15 +1424,6 @@ static int mmc_blk_issue_flush(struct mmc_queue *mq, struct request *req)
 	int ret = 0;
 
 	ret = mmc_flush_cache(card);
-#ifdef CONFIG_LGE_MMC_RESET_IF_HANG
-	if (ret == -ENODEV) {
-		pr_err("%s: %s: restart mmc card.\n", req->rq_disk->disk_name, __func__);
-		if (mmc_blk_reset(md, card->host, MMC_BLK_FLUSH))
-			pr_err("%s: %s: fail to restart mmc.\n", req->rq_disk->disk_name, __func__);
-		else
-			mmc_blk_reset_success(md, MMC_BLK_FLUSH);
-	}
-#endif
 	if (ret == -ETIMEDOUT) {
 		pr_info("%s: requeue flush request after timeout", __func__);
 		spin_lock_irq(q->queue_lock);
