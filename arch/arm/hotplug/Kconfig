@@ -28,7 +28,7 @@ config FAST_HOTPLUG
 config INTELLI_HOTPLUG
 	bool "Intelli hotplug driver"
 	depends on HOTPLUG_CPU
-	default y
+	default n
 	help
 	  An intelligent cpu hotplug driver for
 	  Low Latency Frequency Transition capable processors.
