@@ -399,7 +399,7 @@ config CPU_FREQ_GOV_RAGINGMOLASSES
 config CPU_FREQ_GOV_SMARTASSV2
 	tristate "'smartassV2' cpufreq governor"
 	depends on CPU_FREQ
-	default y
+	default n
 	help
 		'smartassV2' - a "smart" governor
 		If in doubt, say N.
@@ -536,7 +536,7 @@ config CPU_FREQ_GOV_WAVE
 config CPU_FREQ_GOV_WHEATLEY
 	tristate "'wheatley' cpufreq governor"
 	depends on CPU_FREQ
-	default y
+	default n
 	
 config CPU_FREQ_GOV_XPERIENCE
 	 tristate "'xperience' cpufreq governor"
