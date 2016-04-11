@@ -2,8 +2,6 @@
 cflags-y	+= -os
 
 # HotPlugs #
-obj-y		:= msm_zen_decision.o msm_sleeper.o
-
 obj-$(CONFIG_ALUCARD_HOTPLUG)       += alucard_hotplug.o
 obj-$(CONFIG_BLU_PLUG)			    += blu_plug.o
 obj-$(CONFIG_BRICKED_HOTPLUG)	    += bricked_hotplug.o
