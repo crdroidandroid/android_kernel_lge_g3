@@ -17,12 +17,10 @@
 #include <linux/workqueue.h>
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
-#ifdef CONFIG_LCD_NOTIFY
-#include <linux/lcd_notify.h>
-#elif defined(CONFIG_POWERSUSPEND)
+#ifdef CONFIG_POWERSUSPEND
 #include <linux/powersuspend.h>
-#elif defined(CONFIG_HAS_EARLYSUSPEND)
-#include <linux/earlysuspend.h>
+#else
+#include <linux/lcd_notify.h>
 #endif
 
 #include <soc/qcom/limiter.h>
@@ -98,15 +96,13 @@ static void msm_limit_resume(struct work_struct *work)
 		update_cpu_max_freq(cpu);
 }
 
-#ifdef CONFIG_LCD_NOTIFY
-static void __msm_limit_suspend(void)
-#elif defined(CONFIG_POWERSUSPEND)
+#ifdef CONFIG_POWERSUSPEND
 static void __msm_limit_suspend(struct power_suspend *handler)
-#elif defined(CONFIG_HAS_EARLYSUSPEND)
-static void __msm_limit_suspend(struct early_suspend *handler)
+#else
+static void __msm_limit_suspend(void)
 #endif
 {
-	if (!limit.limiter_enabled)
+	if (!limit.limiter_enabled || limit.suspended)
 		return;
 
 	INIT_DELAYED_WORK(&limit.suspend_work, msm_limit_suspend);
@@ -114,12 +110,10 @@ static void __msm_limit_suspend(struct early_suspend *handler)
 			msecs_to_jiffies(limit.suspend_defer_time * 1000));
 }
 
-#ifdef CONFIG_LCD_NOTIFY
-static void __msm_limit_resume(void)
-#elif defined(CONFIG_POWERSUSPEND)
+#ifdef CONFIG_POWERSUSPEND
 static void __msm_limit_resume(struct power_suspend *handler)
-#elif defined(CONFIG_HAS_EARLYSUSPEND)
-static void __msm_limit_resume(struct early_suspend *handler)
+#else
+static void __msm_limit_resume(void)
 #endif
 {
 	if (!limit.limiter_enabled)
@@ -130,7 +124,12 @@ static void __msm_limit_resume(struct early_suspend *handler)
 	queue_work_on(0, limiter_wq, &limit.resume_work);
 }
 
-#ifdef CONFIG_LCD_NOTIFY
+#ifdef CONFIG_POWERSUSPEND
+static struct power_suspend msm_limit_power_suspend_driver = {
+	.suspend = __msm_limit_suspend,
+	.resume = __msm_limit_resume,
+};
+#else
 static int lcd_notifier_callback(struct notifier_block *nb,
                                  unsigned long event, void *data)
 {
@@ -150,16 +149,6 @@ static int lcd_notifier_callback(struct notifier_block *nb,
 
 	return NOTIFY_OK;
 }
-#elif defined(CONFIG_POWERSUSPEND) || defined(CONFIG_HAS_EARLYSUSPEND)
-#ifdef CONFIG_POWERSUSPEND
-static struct power_suspend msm_limit_power_suspend_driver = {
-#else
-static struct early_suspend msm_limit_early_suspend_driver = {
-	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 10,
-#endif
-	.suspend = __msm_limit_suspend,
-	.resume = __msm_limit_resume,
-};
 #endif
 
 static int msm_cpufreq_limit_start(void)
@@ -176,7 +165,9 @@ static int msm_cpufreq_limit_start(void)
 		goto err_out;
 	}
 
-#ifdef CONFIG_LCD_NOTIFY
+#ifdef CONFIG_POWERSUSPEND
+	register_power_suspend(&msm_limit_power_suspend_driver);
+#else
 	limit.notif.notifier_call = lcd_notifier_callback;
 	ret = lcd_register_client(&limit.notif);
 	if (ret != 0) {
@@ -184,10 +175,6 @@ static int msm_cpufreq_limit_start(void)
 			MSM_LIMIT);
 		goto err_dev;
 	}
-#elif defined(CONFIG_POWERSUSPEND)
-	register_power_suspend(&msm_limit_power_suspend_driver);
-#elif defined(CONFIG_HAS_EARLYSUSPEND)
-	register_early_suspend(&msm_limit_early_suspend_driver);
 #endif
 
 	for_each_possible_cpu(cpu)
@@ -200,7 +187,7 @@ static int msm_cpufreq_limit_start(void)
 	queue_work_on(0, limiter_wq, &limit.resume_work);
 
 	return ret;
-#ifdef CONFIG_LCD_NOTIFY
+#ifndef CONFIG_POWERSUSPEND
 err_dev:
 	destroy_workqueue(limiter_wq);
 #endif
@@ -222,13 +209,11 @@ static void msm_cpufreq_limit_stop(void)
 	for_each_possible_cpu(cpu)	
 		mutex_destroy(&limit.msm_limiter_mutex[cpu]);
 
-#ifdef CONFIG_LCD_NOTIFY
+#ifdef CONFIG_POWERSUSPEND
+	unregister_power_suspend(&msm_limit_power_suspend_driver);
+#else
 	lcd_unregister_client(&limit.notif);
 	limit.notif.notifier_call = NULL;
-#elif defined(CONFIG_POWERSUSPEND)
-	unregister_power_suspend(&msm_limit_power_suspend_driver);
-#elif defined(CONFIG_HAS_EARLYSUSPEND)
-	unregister_early_suspend(&msm_limit_early_suspend_driver);
 #endif
 	destroy_workqueue(limiter_wq);
 }

@@ -6844,13 +6844,14 @@ static int sched_domains_numa_masks_update(struct notifier_block *nfb,
 static inline void sched_init_numa(void)
 {
 }
-
+/*
 static int sched_domains_numa_masks_update(struct notifier_block *nfb,
 					   unsigned long action,
 					   void *hcpu)
 {
 	return 0;
 }
+*/
 #endif /* CONFIG_NUMA */
 
 static int __sdt_alloc(const struct cpumask *cpu_map)
