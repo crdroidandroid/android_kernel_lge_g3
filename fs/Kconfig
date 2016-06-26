@@ -107,6 +107,8 @@ source "fs/ntfs/Kconfig"
 endmenu
 endif # BLOCK
 
+source "fs/exfat/Kconfig"
+
 menu "Pseudo filesystems"
 
 source "fs/proc/Kconfig"
@@ -225,6 +227,7 @@ source "fs/sysv/Kconfig"
 source "fs/ufs/Kconfig"
 source "fs/exofs/Kconfig"
 source "fs/f2fs/Kconfig"
+source "fs/exfat/Kconfig"
 
 endif # MISC_FILESYSTEMS
 
@@ -281,4 +284,9 @@ endif # NETWORK_FILESYSTEMS
 source "fs/nls/Kconfig"
 source "fs/dlm/Kconfig"
 
+config AIO_OPTIMIZATION
+	bool "AIO kernel optimization patches"
+	default y
+	help
+	  An experimental AIO FS kernel optimization
 endmenu

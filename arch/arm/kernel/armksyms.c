@@ -94,7 +94,6 @@ EXPORT_SYMBOL(mmiocpy);
 
 #ifdef CONFIG_MMU
 EXPORT_SYMBOL(copy_page);
-EXPORT_SYMBOL(cmp_page);
 
 EXPORT_SYMBOL(__copy_from_user);
 EXPORT_SYMBOL(__copy_to_user);
