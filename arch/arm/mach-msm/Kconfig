@@ -3067,6 +3067,13 @@ config BRICKED_HOTPLUG
 	 This enables kernel based multi core control.
 	 (up/down hotplug based on load)
 
+config FORCE_FAST_CHARGE
+	bool "Force fast charging (AC/USB)"
+	help
+	  A simple sysfs interface to force adapters that
+	  are detected as USB to charge as AC (1A/h) or to set
+	  custom charging currents for AC and USB.
+
 endif
 
 config KERNEL_TEXT_MPU_PROT

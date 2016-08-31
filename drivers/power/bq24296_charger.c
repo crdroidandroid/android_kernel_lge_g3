@@ -69,6 +69,10 @@
 #define BIT(x)	(1 << (x))
 #endif
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
+
 /* Register definitions */
 #define BQ00_INPUT_SRC_CONT_REG              0X00
 #define BQ01_PWR_ON_CONF_REG                 0X01
@@ -643,10 +647,23 @@ static int bq24296_set_input_i_limit(struct bq24296_chip *chip, int ma)
 	}
 #endif
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	if (force_fast_charge    != FAST_CHARGE_DISABLED &&
+	    current_charge_level != NOT_FAST_CHARGING)
+		ma = current_charge_level;
+
+	for (i = ARRAY_SIZE(icl_ma_table) - 1; i >= 0; i--) {
+		if (icl_ma_table[i].icl_ma <= ma)
+			break;
+	}
+#else
+
 	for (i = ARRAY_SIZE(icl_ma_table) - 1; i > 0; i--) {
 		if (ma >= icl_ma_table[i].icl_ma)
 			break;
 	}
+#endif
+
 	temp = icl_ma_table[i].value;
 
 	pr_info("input current limit=%d setting 0x%02x\n", ma, temp);
