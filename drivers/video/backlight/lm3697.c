@@ -26,6 +26,10 @@
 
 #include <mach/board_lge.h>
 
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
+
 static unsigned int sleep_state = 0;
 module_param_named(sleep_state, sleep_state, uint, 0644);
 
@@ -224,13 +228,17 @@ void lm3697_lcd_backlight_set_level(int level)
 	if (level == 0) {
 		if (backlight_status == BL_ON)
 			ret = lm3697_bl_enable(lm3697_bl, 0);
-			dprintk("[LM3697] backlight is off ...\n");
 			sleep_state = 1;
+#ifdef CONFIG_POWERSUSPEND
+			set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
+#endif
 	} else{
 		if (backlight_status == BL_OFF)
 			ret = lm3697_bl_enable(lm3697_bl, 1);
-			dprintk("[LM3697] backlight is on ...\n");
 			sleep_state = 0;
+#ifdef CONFIG_POWERSUSPEND
+			set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
+#endif
 	}
 
 	if (ret)
