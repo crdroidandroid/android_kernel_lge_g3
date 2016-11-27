@@ -3067,6 +3067,14 @@ config FORCE_FAST_CHARGE
 	  are detected as USB to charge as AC (1A/h) or to set
 	  custom charging currents for AC and USB.
 
+config BRICKED_HOTPLUG
+	bool "Enable kernel based mpdecision"
+	depends on MSM_RUN_QUEUE_STATS
+	default y
+	help
+	 This enables kernel based multi core control.
+	 (up/down hotplug based on load)
+
 endif
 
 config KERNEL_TEXT_MPU_PROT
