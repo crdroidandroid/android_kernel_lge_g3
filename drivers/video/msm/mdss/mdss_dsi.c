@@ -24,6 +24,7 @@
 
 #ifdef CONFIG_STATE_NOTIFIER
 #include <linux/state_notifier.h>
+bool scr_suspended;
 #endif
 
 #include "mdss.h"
@@ -1211,8 +1212,10 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 		if (ctrl_pdata->on_cmds.link_state == DSI_HS_MODE)
 			rc = mdss_dsi_unblank(pdata);
 #ifdef CONFIG_STATE_NOTIFIER
-		if (!use_fb_notifier)
-			state_resume();
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+		scr_suspended = false;
+#endif
+		state_resume();
 #endif
 		break;
 	case MDSS_EVENT_BLANK:
@@ -1225,8 +1228,10 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 			rc = mdss_dsi_blank(pdata);
 		rc = mdss_dsi_off(pdata);
 #ifdef CONFIG_STATE_NOTIFIER
-		if (!use_fb_notifier)
-			state_suspend();
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+		scr_suspended = true;
+#endif
+		state_suspend();
 #endif
 		break;
 	case MDSS_EVENT_CONT_SPLASH_FINISH:

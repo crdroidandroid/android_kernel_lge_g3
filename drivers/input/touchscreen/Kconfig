@@ -1036,7 +1036,7 @@ source "drivers/input/touchscreen/g3/Kconfig"
 
 config STATE_NOTIFIER
         bool "State Notifier"
-	depends on TOUCHSCREEN_SYNAPTICS_G2
+	depends on TOUCHSCREEN_SYNAPTICS_G3
 	default y
 
 endif
