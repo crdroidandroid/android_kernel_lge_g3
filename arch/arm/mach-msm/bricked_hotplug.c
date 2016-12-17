@@ -11,7 +11,6 @@
  *
  */
 
-#include <linux/powersuspend.h>
 #include <linux/init.h>
 #include <linux/cpufreq.h>
 #include <linux/workqueue.h>
@@ -24,10 +23,13 @@
 #include <linux/platform_device.h>
 #include <linux/module.h>
 #include <linux/device.h>
+#ifdef CONFIG_STATE_NOTIFIER
+#include <linux/state_notifier.h>
+#endif
 
 #define DEBUG 0
 
-#define MPDEC_TAG			"Bricked_hotplug"
+#define MPDEC_TAG			"bricked_hotplug"
 #define HOTPLUG_ENABLED			1
 #define MSM_MPDEC_STARTDELAY		20000
 #define MSM_MPDEC_DELAY			130
@@ -35,8 +37,9 @@
 #define DEFAULT_MAX_CPUS_ONLINE		NR_CPUS
 #define DEFAULT_MAX_CPUS_ONLINE_SUSP	1
 #define DEFAULT_SUSPEND_DEFER_TIME	10
+#define DEFAULT_DOWN_LOCK_DUR		500
 
-#define MSM_MPDEC_IDLE_FREQ		422400
+#define MSM_MPDEC_IDLE_FREQ		499200
 
 enum {
 	MSM_MPDEC_DISABLED = 0,
@@ -45,11 +48,9 @@ enum {
 	MSM_MPDEC_UP,
 };
 
+static struct notifier_block notif;
 static struct delayed_work hotplug_work;
-static struct delayed_work suspend_work;
-static struct work_struct resume_work;
 static struct workqueue_struct *hotplug_wq;
-static struct workqueue_struct *susp_wq;
 
 static struct cpu_hotplug {
 	unsigned int startdelay;
@@ -59,10 +60,12 @@ static struct cpu_hotplug {
 	unsigned int max_cpus_online_res;
 	unsigned int max_cpus_online_susp;
 	unsigned int delay;
+	unsigned int down_lock_dur;
 	unsigned long int idle_freq;
 	unsigned int max_cpus_online;
 	unsigned int min_cpus_online;
 	unsigned int bricked_enabled;
+	unsigned int hotplug_suspend;
 	struct mutex bricked_hotplug_mutex;
 	struct mutex bricked_cpu_mutex;
 } hotplug = {
@@ -73,60 +76,72 @@ static struct cpu_hotplug {
 	.max_cpus_online_res = DEFAULT_MAX_CPUS_ONLINE,
 	.max_cpus_online_susp = DEFAULT_MAX_CPUS_ONLINE_SUSP,
 	.delay = MSM_MPDEC_DELAY,
+	.down_lock_dur = DEFAULT_DOWN_LOCK_DUR,
 	.idle_freq = MSM_MPDEC_IDLE_FREQ,
 	.max_cpus_online = DEFAULT_MAX_CPUS_ONLINE,
 	.min_cpus_online = DEFAULT_MIN_CPUS_ONLINE,
 	.bricked_enabled = HOTPLUG_ENABLED,
+	.hotplug_suspend = 0,
 };
 
-static unsigned int NwNs_Threshold[8] = {12, 0, 20, 7, 25, 10, 0, 18};
+static unsigned int NwNs_Threshold[8] = {12, 0, 25, 7, 30, 10, 0, 18};
 static unsigned int TwTs_Threshold[8] = {140, 0, 140, 190, 140, 190, 0, 190};
+
+struct down_lock {
+	unsigned int locked;
+	struct delayed_work lock_rem;
+};
+static DEFINE_PER_CPU(struct down_lock, lock_info);
+
+static void apply_down_lock(unsigned int cpu)
+{
+	struct down_lock *dl = &per_cpu(lock_info, cpu);
+
+	dl->locked = 1;
+	queue_delayed_work_on(0, hotplug_wq, &dl->lock_rem,
+			      msecs_to_jiffies(hotplug.down_lock_dur));
+}
+
+static void remove_down_lock(struct work_struct *work)
+{
+	struct down_lock *dl = container_of(work, struct down_lock,
+					    lock_rem.work);
+	dl->locked = 0;
+}
+
+static int check_down_lock(unsigned int cpu)
+{
+	struct down_lock *dl = &per_cpu(lock_info, cpu);
+	return dl->locked;
+}
 
 extern unsigned int get_rq_info(void);
 
-unsigned int state = MSM_MPDEC_DISABLED;
-
-static unsigned long get_rate(int cpu) {
-	return cpufreq_get(cpu);
-}
+static unsigned int state = MSM_MPDEC_DISABLED;
 
 static int get_slowest_cpu(void) {
-	int i, cpu = 0;
-	unsigned long rate, slow_rate = 0;
+	unsigned int cpu, slow_cpu = 0, rate, slow_rate = 0;
 
-	for (i = 1; i < DEFAULT_MAX_CPUS_ONLINE; i++) {
-		if (!cpu_online(i))
+	for_each_online_cpu(cpu) {
+		if (cpu == 0)
 			continue;
-		rate = get_rate(i);
-		if (slow_rate == 0) {
-			cpu = i;
+		rate = cpufreq_quick_get(cpu);
+		if (rate > 0 && slow_rate <= rate) {
 			slow_rate = rate;
-			continue;
-		}
-		if ((rate <= slow_rate) && (slow_rate != 0)) {
-			cpu = i;
-			slow_rate = rate;
+			slow_cpu = cpu;
 		}
 	}
 
-	return cpu;
+	return slow_cpu;
 }
 
-static unsigned long get_slowest_cpu_rate(void) {
-	int i = 0;
-	unsigned long rate, slow_rate = 0;
+static unsigned int get_slowest_cpu_rate(void) {
+	unsigned int cpu, rate, slow_rate = 0;
 
-	for (i = 0; i < DEFAULT_MAX_CPUS_ONLINE; i++) {
-		if (!cpu_online(i))
-			continue;
-		rate = get_rate(i);
-		if ((rate < slow_rate) && (slow_rate != 0)) {
+	for_each_online_cpu(cpu) {
+		rate = cpufreq_quick_get(cpu);
+		if (rate > 0 && slow_rate <= rate)
 			slow_rate = rate;
-			continue;
-		}
-		if (slow_rate == 0) {
-			slow_rate = rate;
-		}
 	}
 
 	return slow_rate;
@@ -158,27 +173,23 @@ static int mp_decision(void) {
 	rq_depth = get_rq_info();
 	nr_cpu_online = num_online_cpus();
 
-	if (nr_cpu_online) {
-		index = (nr_cpu_online - 1) * 2;
-		if ((nr_cpu_online < DEFAULT_MAX_CPUS_ONLINE) && (rq_depth >= NwNs_Threshold[index])) {
-			if ((total_time >= TwTs_Threshold[index]) &&
-				(nr_cpu_online < hotplug.max_cpus_online)) {
-				new_state = MSM_MPDEC_UP;
-				if (get_slowest_cpu_rate() <=  hotplug.idle_freq)
-					new_state = MSM_MPDEC_IDLE;
-			}
-		} else if ((nr_cpu_online > 1) && (rq_depth <= NwNs_Threshold[index+1])) {
-			if ((total_time >= TwTs_Threshold[index+1]) &&
-				(nr_cpu_online > hotplug.min_cpus_online)) {
-				new_state = MSM_MPDEC_DOWN;
-				if (get_slowest_cpu_rate() > hotplug.idle_freq)
-					new_state = MSM_MPDEC_IDLE;
-			}
-		} else {
-			new_state = MSM_MPDEC_IDLE;
-			total_time = 0;
+	index = (nr_cpu_online - 1) * 2;
+	if ((nr_cpu_online < DEFAULT_MAX_CPUS_ONLINE) && (rq_depth >= NwNs_Threshold[index])) {
+		if ((total_time >= TwTs_Threshold[index]) &&
+			(nr_cpu_online < hotplug.max_cpus_online)) {
+			new_state = MSM_MPDEC_UP;
+			if (get_slowest_cpu_rate() <=  hotplug.idle_freq)
+				new_state = MSM_MPDEC_IDLE;
+		}
+	} else if ((nr_cpu_online > 1) && (rq_depth <= NwNs_Threshold[index+1])) {
+		if ((total_time >= TwTs_Threshold[index+1]) &&
+			(nr_cpu_online > hotplug.min_cpus_online)) {
+			new_state = MSM_MPDEC_DOWN;
+			if (get_slowest_cpu_rate() > hotplug.idle_freq)
+				new_state = MSM_MPDEC_IDLE;
 		}
 	} else {
+		new_state = MSM_MPDEC_IDLE;
 		total_time = 0;
 	}
 
@@ -188,10 +199,8 @@ static int mp_decision(void) {
 
 	last_time = ktime_to_ms(ktime_get());
 #if DEBUG
-	pr_info(MPDEC_TAG"[DEBUG MASK] rq: %u, new_state: %i | Mask=[%d%d%d%d]",
+	pr_info(MPDEC_TAG"[DEBUG] rq: %u, new_state: %i | Mask=[%d%d%d%d]\n",
 			rq_depth, new_state, cpu_online(0), cpu_online(1), cpu_online(2), cpu_online(3));
-	pr_info(MPDEC_TAG"[DEBUG RATE] CPU0 rate: %lu | CPU1 rate: %lu | CPU2 rate: %lu | CPU3 rate: %lu",
-			get_rate(0), get_rate(1), get_rate(2), get_rate(3));
 #endif
 	return new_state;
 }
@@ -213,15 +222,17 @@ static void __ref bricked_hotplug_work(struct work_struct *work) {
 	case MSM_MPDEC_DOWN:
 		cpu = get_slowest_cpu();
 		if (cpu > 0) {
-			if (cpu_online(cpu))
+			if (cpu_online(cpu) && !check_down_lock(cpu))
 				cpu_down(cpu);
 		}
 		break;
 	case MSM_MPDEC_UP:
 		cpu = cpumask_next_zero(0, cpu_online_mask);
 		if (cpu < DEFAULT_MAX_CPUS_ONLINE) {
-			if (!cpu_online(cpu))
+			if (!cpu_online(cpu)) {
 				cpu_up(cpu);
+				apply_down_lock(cpu);
+			}
 		}
 		break;
 	default:
@@ -237,11 +248,14 @@ out:
 	return;
 }
 
-static void bricked_hotplug_suspend(struct work_struct *work)
+static void bricked_hotplug_suspend(void)
 {
 	int cpu;
 
-	if (!hotplug.bricked_enabled)
+	if (hotplug.suspended)
+		return;
+
+	if (!hotplug.hotplug_suspend)
 		return;
 
 	mutex_lock(&hotplug.bricked_hotplug_mutex);
@@ -269,11 +283,11 @@ static void bricked_hotplug_suspend(struct work_struct *work)
 			cpu_online(0), cpu_online(1), cpu_online(2), cpu_online(3));
 }
 
-static void __ref bricked_hotplug_resume(struct work_struct *work)
+static void __ref bricked_hotplug_resume(void)
 {
 	int cpu, required_reschedule = 0, required_wakeup = 0;
 
-	if (!hotplug.bricked_enabled)
+	if (!hotplug.hotplug_suspend)
 		return;
 
 	if (hotplug.suspended) {
@@ -296,6 +310,7 @@ static void __ref bricked_hotplug_resume(struct work_struct *work)
 			if (cpu == 0)
 				continue;
 			cpu_up(cpu);
+			apply_down_lock(cpu);
 		}
 	}
 
@@ -307,62 +322,65 @@ static void __ref bricked_hotplug_resume(struct work_struct *work)
 	}
 }
 
-static void __bricked_hotplug_suspend(struct power_suspend *handler)
+#ifdef CONFIG_STATE_NOTIFIER
+static int state_notifier_callback(struct notifier_block *this,
+				unsigned long event, void *data)
 {
-	INIT_DELAYED_WORK(&suspend_work, bricked_hotplug_suspend);
-	queue_delayed_work_on(0, susp_wq, &suspend_work,
-				msecs_to_jiffies(hotplug.suspend_defer_time * 1000));
-}
+	if (!hotplug.bricked_enabled)
+		return NOTIFY_OK;
 
-static void __bricked_hotplug_resume(struct power_suspend *handler)
-{
-	flush_workqueue(susp_wq);
-	cancel_delayed_work_sync(&suspend_work);
-	queue_work_on(0, susp_wq, &resume_work);
-}
+	switch (event) {
+		case STATE_NOTIFIER_ACTIVE:
+			bricked_hotplug_resume();
+			break;
+		case STATE_NOTIFIER_SUSPEND:
+			bricked_hotplug_suspend();
+			break;
+		default:
+			break;
+	}
 
-static struct power_suspend bricked_hotplug_power_suspend_driver = {
-	.suspend = __bricked_hotplug_suspend,
-	.resume = __bricked_hotplug_resume,
-};
+	return NOTIFY_OK;
+}
+#endif
 
 static int bricked_hotplug_start(void)
 {
-	int ret = 0;
+	int cpu, ret = 0;
+	struct down_lock *dl;
 
-	hotplug_wq = alloc_workqueue(
-						"bricked_hotplug_wq",
-						WQ_UNBOUND | WQ_RESCUER | WQ_FREEZABLE,
-						1
-						);
+	hotplug_wq = alloc_workqueue("bricked_hotplug", WQ_HIGHPRI | WQ_FREEZABLE, 0);
 	if (!hotplug_wq) {
 		ret = -ENOMEM;
 		goto err_out;
 	}
 
-	susp_wq =
-	    alloc_workqueue("susp_wq", WQ_FREEZABLE, 0);
-	if (!susp_wq) {
-		pr_err("%s: Failed to allocate suspend workqueue\n",
-		       MPDEC_TAG);
-		ret = -ENOMEM;
-		goto err_out;
+#ifdef CONFIG_STATE_NOTIFIER
+	notif.notifier_call = state_notifier_callback;
+	if (state_register_client(&notif)) {
+		pr_err("%s: Failed to register State notifier callback\n",
+			MPDEC_TAG);
+		goto err_dev;
 	}
+#endif
 
 	mutex_init(&hotplug.bricked_cpu_mutex);
 	mutex_init(&hotplug.bricked_hotplug_mutex);
 
-	register_power_suspend(&bricked_hotplug_power_suspend_driver);
-
 	INIT_DELAYED_WORK(&hotplug_work, bricked_hotplug_work);
-	INIT_DELAYED_WORK(&suspend_work, bricked_hotplug_suspend);
-	INIT_WORK(&resume_work, bricked_hotplug_resume);
+
+	for_each_possible_cpu(cpu) {
+		dl = &per_cpu(lock_info, cpu);
+		INIT_DELAYED_WORK(&dl->lock_rem, remove_down_lock);
+	}
 
 	if (hotplug.bricked_enabled)
 		queue_delayed_work(hotplug_wq, &hotplug_work,
 					msecs_to_jiffies(hotplug.startdelay));
 
 	return ret;
+err_dev:
+	destroy_workqueue(hotplug_wq);
 err_out:
 	hotplug.bricked_enabled = 0;
 	return ret;
@@ -371,17 +389,21 @@ err_out:
 static void bricked_hotplug_stop(void)
 {
 	int cpu;
+	struct down_lock *dl;
 
-	flush_workqueue(susp_wq);
-	cancel_work_sync(&resume_work);
-	cancel_delayed_work_sync(&suspend_work);
+	for_each_possible_cpu(cpu) {
+		dl = &per_cpu(lock_info, cpu);
+		cancel_delayed_work_sync(&dl->lock_rem);
+	}
+
 	cancel_delayed_work_sync(&hotplug_work);
 	mutex_destroy(&hotplug.bricked_hotplug_mutex);
 	mutex_destroy(&hotplug.bricked_cpu_mutex);
-	destroy_workqueue(susp_wq);
+#ifdef CONFIG_STATE_NOTIFIER
+	state_unregister_client(&notif);
+#endif
+	notif.notifier_call = NULL;
 	destroy_workqueue(hotplug_wq);
-
-	unregister_power_suspend(&bricked_hotplug_power_suspend_driver);
 
 	/* Put all sibling cores to sleep */
 	for_each_online_cpu(cpu) {
@@ -403,11 +425,13 @@ static ssize_t show_##file_name						\
 
 show_one(startdelay, startdelay);
 show_one(delay, delay);
+show_one(down_lock_duration, down_lock_dur);
 show_one(min_cpus_online, min_cpus_online);
 show_one(max_cpus_online, max_cpus_online);
 show_one(max_cpus_online_susp, max_cpus_online_susp);
 show_one(suspend_defer_time, suspend_defer_time);
 show_one(bricked_enabled, bricked_enabled);
+show_one(hotplug_suspend, hotplug_suspend);
 
 #define define_one_twts(file_name, arraypos)				\
 static ssize_t show_##file_name						\
@@ -500,6 +524,22 @@ static ssize_t store_delay(struct device *dev,
 		return -EINVAL;
 
 	hotplug.delay = input;
+
+	return count;
+}
+
+static ssize_t store_down_lock_duration(struct device *dev,
+				struct device_attribute *bricked_hotplug_attrs,
+				const char *buf, size_t count)
+{
+	int ret;
+	unsigned int val;
+
+	ret = sscanf(buf, "%u", &val);
+	if (ret != 1)
+		return -EINVAL;
+
+	hotplug.down_lock_dur = val;
 
 	return count;
 }
@@ -620,6 +660,7 @@ static ssize_t store_bricked_enabled(struct device *dev,
 {
 	unsigned int input;
 	int ret;
+
 	ret = sscanf(buf, "%u", &input);
 	if (ret != 1)
 		return -EINVAL;
@@ -645,24 +686,54 @@ static ssize_t store_bricked_enabled(struct device *dev,
 	return count;
 }
 
+static ssize_t store_hotplug_suspend(struct device *dev,
+				struct device_attribute *bricked_hotplug_attrs,
+				const char *buf, size_t count)
+{
+	unsigned int input;
+	int ret;
+
+	ret = sscanf(buf, "%u", &input);
+	if (ret != 1)
+		return -EINVAL;
+
+	if (input > 1)
+		input = 1;
+
+	if (input == hotplug.hotplug_suspend)
+		return count;
+
+	hotplug.hotplug_suspend = input;
+
+	return count;
+}
+
 static DEVICE_ATTR(startdelay, 644, show_startdelay, store_startdelay);
 static DEVICE_ATTR(delay, 644, show_delay, store_delay);
+static DEVICE_ATTR(down_lock_duration, 644, show_down_lock_duration, store_down_lock_duration);
 static DEVICE_ATTR(idle_freq, 644, show_idle_freq, store_idle_freq);
+static DEVICE_ATTR(min_cpus, 644, show_min_cpus_online, store_min_cpus_online);
+static DEVICE_ATTR(max_cpus, 644, show_max_cpus_online, store_max_cpus_online);
 static DEVICE_ATTR(min_cpus_online, 644, show_min_cpus_online, store_min_cpus_online);
 static DEVICE_ATTR(max_cpus_online, 644, show_max_cpus_online, store_max_cpus_online);
 static DEVICE_ATTR(max_cpus_online_susp, 644, show_max_cpus_online_susp, store_max_cpus_online_susp);
 static DEVICE_ATTR(suspend_defer_time, 644, show_suspend_defer_time, store_suspend_defer_time);
 static DEVICE_ATTR(enabled, 644, show_bricked_enabled, store_bricked_enabled);
+static DEVICE_ATTR(hotplug_suspend, 644, show_hotplug_suspend, store_hotplug_suspend);
 
 static struct attribute *bricked_hotplug_attrs[] = {
 	&dev_attr_startdelay.attr,
 	&dev_attr_delay.attr,
+	&dev_attr_down_lock_duration.attr,
 	&dev_attr_idle_freq.attr,
+	&dev_attr_min_cpus.attr,
+	&dev_attr_max_cpus.attr,
 	&dev_attr_min_cpus_online.attr,
 	&dev_attr_max_cpus_online.attr,
 	&dev_attr_max_cpus_online_susp.attr,
 	&dev_attr_suspend_defer_time.attr,
 	&dev_attr_enabled.attr,
+	&dev_attr_hotplug_suspend.attr,
 	&dev_attr_twts_threshold_0.attr,
 	&dev_attr_twts_threshold_1.attr,
 	&dev_attr_twts_threshold_2.attr,
@@ -689,7 +760,7 @@ static struct attribute_group attr_group = {
 
 /**************************** SYSFS END ****************************/
 
-static int __devinit bricked_hotplug_probe(struct platform_device *pdev)
+static int bricked_hotplug_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	struct kobject *bricked_kobj;
