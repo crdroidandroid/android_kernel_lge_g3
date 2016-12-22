@@ -2360,11 +2360,18 @@ static void bq24296_batt_external_power_changed(struct power_supply *psy)
 #ifdef CONFIG_MACH_MSM8974_G3
 	complete(&chip->phihong_complete);
 	bq24296_set_phihong_current(chip, ret.intval);
+
+#ifdef CONFIG_LGE_PM_USB_CURRENT_MAX_MODE
 	chip->batt_psy.get_property(&chip->batt_psy,
 			POWER_SUPPLY_PROP_USB_CURRENT_MAX_MODE, &ret);
 	usb_current_max_enabled = ret.intval;
 	/* For MST, boost current up over 900mA in spite of USB */
 	if ((safety_timer_enabled == 0 || usb_current_max_enabled) && ret.intval < 900) {
+#else
+        /* For MST, boost current up over 900mA in spite of USB */
+        if (safety_timer_enabled == 0 && ret.intval < 900) {
+
+#endif
 		ret.intval = 900;
 		bq24296_charger_psy_setprop(chip, psy_this, INPUT_CURRENT_MAX, ret.intval);
 		pr_info("safety timer disabled.... input current limit = %d\n",ret.intval);
@@ -2992,7 +2999,7 @@ static void bq24296_monitor_batt_temp(struct work_struct *work)
 	struct charging_rsp res;
 	bool is_changed = false;
 	union power_supply_propval ret = {0,};
-#ifdef CONFIG_LGE_THERMALE_CHG_CONTROL
+#ifdef CONFIG_CHARGER_UNIFIED_WLC
 	union power_supply_propval wlc_ret = {0,};
 	int wlc_thermal_mitigation = -1;
 	int wlc_online = -1;
