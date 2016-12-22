@@ -3,7 +3,6 @@ config MACH_MSM8974_G3
 	select LEDS_PM8941_EMOTIONAL
 	select LGE_PM_BATTERY_ID_CHECKER
 	select LGE_PM_LLK_MODE
-	select LGE_PM_USB_CURRENT_MAX_MODE
 	select LGE_SHARPENING
 	select LGE_THERMALE_CHG_CONTROL
 	select MACH_LGE
@@ -47,6 +46,14 @@ config MACH_MSM8974_G3_TMO_US
 	bool "MSM8974 G3 TMO US"
 	help
 	  Support for the Qualcomm MSM8974 G3 AT&T device.
+
+config MACH_MSM8974_G3_CN
+	depends on ARCH_MSM8974
+	select MACH_MSM8974_G3
+	select LGE_MMC_SD_USE_SDCC3
+	bool "MSM8974 G3 CN"
+	help
+	  Support for the Qualcomm MSM8974 G3 CHINA device.
 
 config MACH_MSM8974_G3_GLOBAL_COM
 	depends on ARCH_MSM8974

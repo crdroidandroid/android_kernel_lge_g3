@@ -406,6 +406,44 @@ static const struct qpnp_vadc_map_pt adcmap_qrd_skug_btm_threshold[] = {
 };
 
 /* Voltage to temperature */
+#ifdef CONFIG_MACH_MSM8974_G3_CN
+static const struct qpnp_vadc_map_pt adcmap_100k_104ef_104fb[] = {
+	{1755,	-40},
+	{1737,	-35},
+	{1713,	-30},
+	{1684,	-25},
+	{1645,	-20},
+	{1597,	-15},
+	{1537,	-10},
+	{1467,	-5},
+	{1386,	0},
+	{1296,	5},
+	{1197,	10},
+	{1093,	15},
+	{986,	20},
+	{879,	25},
+	{755,	30},
+	{660,	35},
+	{522,	40},
+	{422,	45},
+	{383,	50},
+	{262,	55},
+	{237,	60},
+	{196,	65},
+	{172,	70},
+	{146,	75},
+	{125,	80},
+	{107,	85},
+	{92,	90},
+	{79,	95},
+	{68,	100},
+	{59,	105},
+	{51,	110},
+	{44,	115},
+	{36,	120},
+	{29,	125}
+};
+#else
 static const struct qpnp_vadc_map_pt adcmap_100k_104ef_104fb[] = {
 	{1758,	-40},
 	{1742,	-35},
@@ -442,7 +480,7 @@ static const struct qpnp_vadc_map_pt adcmap_100k_104ef_104fb[] = {
 	{51,	120},
 	{44,	125}
 };
-
+#endif
 /* Voltage to temperature */
 static const struct qpnp_vadc_map_pt adcmap_150k_104ef_104fb[] = {
 	{1738,	-40},
