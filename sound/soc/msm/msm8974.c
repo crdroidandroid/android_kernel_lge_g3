@@ -64,7 +64,11 @@ static int hdmi_rx_bit_format = SNDRV_PCM_FORMAT_S16_LE;
 #define SAMPLING_RATE_192KHZ 192000
 
 #ifdef CONFIG_SND_SOC_CS35L32
+#ifdef CONFIG_MACH_MSM8974_G3_CN
+#define HW_REV_CIRRUS HW_REV_EVB1
+#else
 #define HW_REV_CIRRUS HW_REV_A
+#endif
 #endif
 static int msm8974_auxpcm_rate = 8000;
 #define LO_1_SPK_AMP	0x1
