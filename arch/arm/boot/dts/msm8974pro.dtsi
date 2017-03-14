@@ -1667,6 +1667,7 @@
                        qcom,gpu-freq = <657500000>;
                        qcom,bus-freq = <14>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <7>;
                };
 
                qcom,gpu-pwrlevel@1 {
@@ -1674,6 +1675,7 @@
                        qcom,gpu-freq = <578000000>;
                        qcom,bus-freq = <14>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <6>;
                };
 
                qcom,gpu-pwrlevel@2 {
@@ -1681,6 +1683,7 @@
                        qcom,gpu-freq = <462400000>;
                        qcom,bus-freq = <11>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <5>;
                };
 
                qcom,gpu-pwrlevel@3 {
@@ -1688,6 +1691,7 @@
                        qcom,gpu-freq = <389000000>;
                        qcom,bus-freq = <8>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <4>;
                };
 
                qcom,gpu-pwrlevel@4 {
@@ -1695,6 +1699,7 @@
                        qcom,gpu-freq = <330000000>;
                        qcom,bus-freq = <5>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <3>;
                };
 
                qcom,gpu-pwrlevel@5 {
@@ -1702,6 +1707,7 @@
                        qcom,gpu-freq = <200000000>;
                        qcom,bus-freq = <2>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <2>;
                };
 
                qcom,gpu-pwrlevel@6 {
@@ -1716,6 +1722,7 @@
                        qcom,gpu-freq = <27000000>;
                        qcom,bus-freq = <0>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <0>;
                };
 
                qcom,gpu-pwrlevel@8 {
@@ -1723,6 +1730,7 @@
                        qcom,gpu-freq = <27000000>;
                        qcom,bus-freq = <0>;
                        qcom,io-fraction = <101>;
+                       qcom,bus-min = <0>;
                };
        };
 };
