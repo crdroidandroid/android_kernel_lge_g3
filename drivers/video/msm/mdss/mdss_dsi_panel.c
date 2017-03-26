@@ -21,6 +21,7 @@
 #include <linux/leds.h>
 #include <linux/qpnp/pwm.h>
 #include <linux/err.h>
+#include <linux/display_state.h>
 
 #include "mdss_dsi.h"
 #ifdef CONFIG_MFD_TPS65132
@@ -70,6 +71,13 @@ DEFINE_LED_TRIGGER(bl_led_trigger);
 #include <linux/backlight.h>
 static struct backlight_device *bl_dev;
 #endif
+
+bool display_on = true;
+
+bool is_display_on()
+{
+	return display_on;
+}
 
 void mdss_dsi_panel_pwm_cfg(struct mdss_dsi_ctrl_pdata *ctrl)
 {
@@ -604,6 +612,8 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 	set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
 #endif
 
+	display_on = true;
+
 	ctrl = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
 	mipi  = &pdata->panel_info.mipi;
@@ -648,6 +658,9 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 #endif
 
 	pr_debug("%s:-\n", __func__);
+
+	display_on = false;
+
 	return 0;
 }
 #ifdef CONFIG_MACH_LGE
