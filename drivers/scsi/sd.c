@@ -2724,7 +2724,8 @@ static int sd_probe(struct device *dev)
 	get_device(&sdkp->dev);	/* prevent release before async_schedule */
 	async_schedule(sd_probe_async, sdkp);
 
-	if (!strcmp(sdkp->disk->disk_name, "sde"))
+	if (!strcmp(sdkp->disk->disk_name, "sda") ||
+		!strcmp(sdkp->disk->disk_name, "sde"))
 		init_iosched_switcher(sdp->request_queue);
 
 	return 0;
