@@ -3078,8 +3078,7 @@ static ssize_t store_sampling_rate_idle_delay(struct kobject *a, struct attribut
 	}
 #endif /* ENABLE_PROFILES_SUPPORT */
 	dbs_tuners_ins.sampling_rate_idle_delay = input;
-
-	return count;
+    return count;
 }
 
 #if (defined(CONFIG_HAS_EARLYSUSPEND) || defined(CONFIG_POWERSUSPEND) && !defined(DISABLE_POWER_MANAGEMENT)) || defined(USE_LCD_NOTIFIER)
