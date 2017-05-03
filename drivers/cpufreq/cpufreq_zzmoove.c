@@ -3058,7 +3058,7 @@ static ssize_t store_sampling_rate_idle_delay(struct kobject *a, struct attribut
 	int ret;
 	ret = sscanf(buf, "%u", &input);
 
-	if (ret != 1 || input < 0
+	    if (ret != 1 || input < 0
 #ifdef ENABLE_PROFILES_SUPPORT
 	    || set_profile_active == true)
 #else
@@ -3066,19 +3066,19 @@ static ssize_t store_sampling_rate_idle_delay(struct kobject *a, struct attribut
 #endif /* ENABLE_PROFILES_SUPPORT */
 	    return -EINVAL;
 
-	if (input == 0)
-	    sampling_rate_step_up_delay = 0;
-	    sampling_rate_step_down_delay = 0;
+        if (input == 0)
+        sampling_rate_step_up_delay = 0;
+        sampling_rate_step_down_delay = 0;
 
 #ifdef ENABLE_PROFILES_SUPPORT
-	// ZZ: set profile number to 0 and profile name to custom mode if value has changed
-	if (!dbs_tuners_ins.profile_sticky_mode && dbs_tuners_ins.profile_number != 0 && dbs_tuners_ins.sampling_rate_idle_delay != input) {
+	    // ZZ: set profile number to 0 and profile name to custom mode if value has changed
+	    if (!dbs_tuners_ins.profile_sticky_mode && dbs_tuners_ins.profile_number != 0 && dbs_tuners_ins.sampling_rate_idle_delay != input) {
 	    dbs_tuners_ins.profile_number = 0;
 	    strncpy(dbs_tuners_ins.profile, custom_profile, sizeof(dbs_tuners_ins.profile));
 	}
 #endif /* ENABLE_PROFILES_SUPPORT */
-	dbs_tuners_ins.sampling_rate_idle_delay = input;
-    return count;
+	    dbs_tuners_ins.sampling_rate_idle_delay = input;
+        return count;
 }
 
 #if (defined(CONFIG_HAS_EARLYSUSPEND) || defined(CONFIG_POWERSUSPEND) && !defined(DISABLE_POWER_MANAGEMENT)) || defined(USE_LCD_NOTIFIER)
@@ -7789,12 +7789,12 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		}
 #endif /* ENABLE_SNAP_THERMAL_SUPPORT */
 
-	    // ZZ: Sampling down momentum - if momentum is inactive switch to 'down_skip' method
-	    if (zz_sampling_down_max_mom == 0 && zz_sampling_down_factor > 1)
-		this_dbs_info->down_skip = 0;
+	        // ZZ: Sampling down momentum - if momentum is inactive switch to 'down_skip' method
+	        if (zz_sampling_down_max_mom == 0 && zz_sampling_down_factor > 1)
+	     	this_dbs_info->down_skip = 0;
 
-		// ZZ: Frequency Limit: if we are at freq_limit break out early
-		if (dbs_tuners_ins.freq_limit != 0
+	    	// ZZ: Frequency Limit: if we are at freq_limit break out early
+		    if (dbs_tuners_ins.freq_limit != 0
 			&& policy->cur == dbs_tuners_ins.freq_limit) {
 #ifdef ENABLE_MUSIC_LIMITS
 			// ff: but what if the music max freq wants to take over?
@@ -7806,35 +7806,35 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 #else
 				return;
 #endif /* ENABLE_MUSIC_LIMITS */
-		}
+		        }
 
-	    // if we are already at full speed then break out early but not if freq limit is set
-	    if (policy->cur == policy->max && dbs_tuners_ins.freq_limit == 0)	// ZZ: changed check from reqested_freq to current freq (DerTeufel1980)
-		return;
+	        // if we are already at full speed then break out early but not if freq limit is set
+	        if (policy->cur == policy->max && dbs_tuners_ins.freq_limit == 0)	// ZZ: changed check from reqested_freq to current freq (DerTeufel1980)
+		        return;
 
-	    // ZZ: Sampling down momentum - if momentum is active and we are switching to max speed, apply sampling_down_factor
-	    if (zz_sampling_down_max_mom != 0 && policy->cur < policy->max)
-		this_dbs_info->rate_mult = zz_sampling_down_factor;
+	        // ZZ: Sampling down momentum - if momentum is active and we are switching to max speed, apply sampling_down_factor
+            if (zz_sampling_down_max_mom != 0 && policy->cur < policy->max)
+                this_dbs_info->rate_mult = zz_sampling_down_factor;
 
-		this_dbs_info->requested_freq = zz_get_next_freq(policy->cur, 1, max_load);
+		        this_dbs_info->requested_freq = zz_get_next_freq(policy->cur, 1, max_load);
 
-		if (dbs_tuners_ins.freq_limit != 0
-			&& this_dbs_info->requested_freq > dbs_tuners_ins.freq_limit) {
+		        if (dbs_tuners_ins.freq_limit != 0
+			            && this_dbs_info->requested_freq > dbs_tuners_ins.freq_limit) {
 #ifdef ENABLE_MUSIC_LIMITS
-			// ff: right now we normally would let the freq_limit snub this, but we have to see if music needs to take over
-			if (suspend_flag && dbs_tuners_ins.music_max_freq && dbs_tuners_ins.music_state) {
-				// ff: screen is off, music freq is set, and music is playing.
+			            // ff: right now we normally would let the freq_limit snub this, but we have to see if music needs to take over
+			            if (suspend_flag && dbs_tuners_ins.music_max_freq && dbs_tuners_ins.music_state) {
+				        // ff: screen is off, music freq is set, and music is playing.
 
-				// ff: make sure we haven't exceeded the music freq.
-				if (this_dbs_info->requested_freq > dbs_tuners_ins.music_max_freq) {
-					this_dbs_info->requested_freq = dbs_tuners_ins.music_max_freq;
-				}
+				        // ff: make sure we haven't exceeded the music freq.
+				        if (this_dbs_info->requested_freq > dbs_tuners_ins.music_max_freq) {
+					            this_dbs_info->requested_freq = dbs_tuners_ins.music_max_freq;
+				        }
 
-			} else {
-				this_dbs_info->requested_freq = dbs_tuners_ins.freq_limit;
-			}
+			    } else {
+				        this_dbs_info->requested_freq = dbs_tuners_ins.freq_limit;
+			    }
 #else
-				this_dbs_info->requested_freq = dbs_tuners_ins.freq_limit;
+				        this_dbs_info->requested_freq = dbs_tuners_ins.freq_limit;
 #endif /* ENABLE_MUSIC_LIMITS */
 		}
 
@@ -8838,76 +8838,71 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 		    hotplug_thresholds[1][i] = DEF_FREQUENCY_DOWN_THRESHOLD_HOTPLUG;
 		}
 #endif /* ENABLE_HOTPLUGGING */
-		mutex_init(&this_dbs_info->timer_mutex);
-		dbs_enable++;
-		/*
-		 * Start the timerschedule work, when this governor
-		 * is used for first time
-		 */
-		if (dbs_enable == 1) {
-		    unsigned int latency;
-		    // policy latency is in nS. Convert it to uS first
-		    latency = policy->cpuinfo.transition_latency / 1000;
-		    if (latency == 0)
-			latency = 1;
+		        mutex_init(&this_dbs_info->timer_mutex);
+		        dbs_enable++;
+		        /*
+		        * Start the timerschedule work, when this governor
+		        * is used for first time
+		        */
+		        if (dbs_enable == 1) {
+		            unsigned int latency;
+		            // policy latency is in nS. Convert it to uS first
+		            latency = policy->cpuinfo.transition_latency / 1000;
+			            if (rc) {
+			                mutex_unlock(&dbs_mutex);
+                            return rc;
+			            }
 
-			rc = sysfs_create_group(cpufreq_global_kobject,
-						&dbs_attr_group);
-			if (rc) {
-			    mutex_unlock(&dbs_mutex);
-			    return rc;
-			}
-
-			/*
-			 * conservative does not implement micro like ondemand
-			 * governor, thus we are bound to jiffes/HZ
-			 */
-			min_sampling_rate =
-				MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(3);
-			// Bring kernel and HW constraints together
-			min_sampling_rate = max(min_sampling_rate,
-					MIN_LATENCY_MULTIPLIER * latency);
-			dbs_tuners_ins.sampling_rate_current =
-				max(min_sampling_rate,
-				    latency * LATENCY_MULTIPLIER);
+			            /*
+			            * conservative does not implement micro like ondemand
+			            * governor, thus we are bound to jiffes/HZ
+			            */
+			            min_sampling_rate =
+				                MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(3);
+			            // Bring kernel and HW constraints together
+			            min_sampling_rate = max(min_sampling_rate,
+					                    MIN_LATENCY_MULTIPLIER * latency);
+			            dbs_tuners_ins.sampling_rate_current =
+				                max(min_sampling_rate,
+				                    latency * LATENCY_MULTIPLIER);
 #ifdef ENABLE_PROFILES_SUPPORT
 #if (DEF_PROFILE_NUMBER > 0)
-			set_profile(DEF_PROFILE_NUMBER);
+			            set_profile(DEF_PROFILE_NUMBER);
 #endif /* (DEF_PROFILE_NUMBER > 0) */
 #endif /* ENABLE_PROFILES_SUPPORT */
-			// ZZ: Sampling down momentum - set down factor and max momentum
-			orig_sampling_down_factor = zz_sampling_down_factor;
-			orig_sampling_down_max_mom = zz_sampling_down_max_mom;
+			            // ZZ: Sampling down momentum - set down factor and max momentum
+			            orig_sampling_down_factor = zz_sampling_down_factor;
+			            orig_sampling_down_max_mom = zz_sampling_down_max_mom;
 #if (defined(CONFIG_HAS_EARLYSUSPEND) || defined(CONFIG_POWERSUSPEND) && !defined(DISABLE_POWER_MANAGEMENT)) || defined(USE_LCD_NOTIFIER)
-			sampling_rate_awake = dbs_tuners_ins.sampling_rate
-			= dbs_tuners_ins.sampling_rate_current;
+			            sampling_rate_awake = dbs_tuners_ins.sampling_rate
+			            = dbs_tuners_ins.sampling_rate_current;
 #else
-			dbs_tuners_ins.sampling_rate
-			= dbs_tuners_ins.sampling_rate_current;
+			            dbs_tuners_ins.sampling_rate
+			            = dbs_tuners_ins.sampling_rate_current;
 #endif /* (defined(CONFIG_HAS_EARLYSUSPEND)... */
 #if (defined(CONFIG_HAS_EARLYSUSPEND) || defined(CONFIG_POWERSUSPEND) && !defined(DISABLE_POWER_MANAGEMENT)) || defined(USE_LCD_NOTIFIER)
-			up_threshold_awake = dbs_tuners_ins.up_threshold;
-			down_threshold_awake = dbs_tuners_ins.down_threshold;
-			smooth_up_awake = dbs_tuners_ins.smooth_up;
+			            up_threshold_awake = dbs_tuners_ins.up_threshold;
+			            down_threshold_awake = dbs_tuners_ins.down_threshold;
+			            smooth_up_awake = dbs_tuners_ins.smooth_up;
 #endif /* (defined(CONFIG_HAS_EARLYSUSPEND)... */
-			// ZZ: switch to proportional scaling if we didn't get system freq table
-			if (!system_freq_table) {
-			    printk(KERN_ERR "[zzmoove] Failed to get system freq table! falling back to proportional scaling!\n");
-			    dbs_tuners_ins.scaling_proportional = 2;
-			}
+			            // ZZ: switch to proportional scaling if we didn't get system freq table
+			            if (!system_freq_table) {
+			                printk(KERN_ERR "[zzmoove] Failed to get system freq table! falling back to proportional scaling!\n");
+			                dbs_tuners_ins.scaling_proportional = 2;
+			            }
 
-			cpufreq_register_notifier(
-					&dbs_cpufreq_notifier_block,
-					CPUFREQ_TRANSITION_NOTIFIER);
+			            cpufreq_register_notifier(
+					                    &dbs_cpufreq_notifier_block,
+					                    CPUFREQ_TRANSITION_NOTIFIER);
 #ifdef ENABLE_INPUTBOOST
-			if (dbs_tuners_ins.inputboost_cycles) {
-				rc = input_register_handler(&interactive_input_handler);
-				if (!rc)
-					pr_info("[zzmoove/store_inputboost_cycles] inputbooster - registered\n");
-				else
-					pr_info("[zzmoove/store_inputboost_cycles] inputbooster - register FAILED\n");
-				rc = 0;
-			}
+			            if (dbs_tuners_ins.inputboost_cycles) {
+				                rc = input_register_handler(&interactive_input_handler);
+				                if (!rc)
+					                    pr_info("[zzmoove/store_inputboost_cycles] inputbooster - registered\n");
+				                else
+					                    pr_info("[zzmoove/store_inputboost_cycles] inputbooster - register FAILED\n");
+				                rc = 0;
+			            }
 #endif /* ENABLE_INPUTBOOST */
 		}
 		mutex_unlock(&dbs_mutex);

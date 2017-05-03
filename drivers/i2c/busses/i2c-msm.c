@@ -419,14 +419,12 @@ msm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
 
 		if (check_busy) {
 			ret = msm_i2c_poll_notbusy(dev);
-			if (ret)
-				ret = msm_i2c_recover_bus_busy(dev, adap);
-				if (ret) {
-					dev_err(dev->dev,
-						"Error waiting for notbusy\n");
-					goto out_err;
-				}
-			check_busy = 0;
+			if (ret) {
+				dev_err(dev->dev,
+					"Error waiting for notbusy\n");
+				goto out_err;
+			}
+		check_busy = 0;
 		}
 
 		if (rem == 1 && msgs->len == 0)

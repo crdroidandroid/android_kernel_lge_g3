@@ -354,7 +354,7 @@ sapGotoChannelSel
 #ifdef SOFTAP_CHANNEL_RANGE
             if(sapContext->channelList != NULL)
             {
-                for ( i = 0 ; i < sapContext->numofChannel ; i++)
+                    for ( i = 0 ; i < sapContext->numofChannel ; i++)
                     if (NV_CHANNEL_ENABLE ==
                         vos_nv_getChannelEnabledState(sapContext->channelList[i]))
                     {

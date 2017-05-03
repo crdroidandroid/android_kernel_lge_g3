@@ -657,7 +657,7 @@ do {												\
 } while (0)
 
 #define DO_SAFE(do_work, goto_error) 				\
-	DO_IF(unlikely((do_work) < 0), goto_error)
+	DO_IF(unlikely((do_work) < 1), goto_error)
 
 #define ASSIGN(do_assign, goto_error) 				\
 do {								\

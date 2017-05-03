@@ -4407,7 +4407,7 @@ ad_config_exit:
 }
 
 int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
-			struct mdss_ad_input *input, int wait) {
+			            struct mdss_ad_input *input, int wait) {
 	int ret = 0;
 	struct mdss_ad_info *ad;
 	u32 bl;
@@ -4419,7 +4419,7 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 	mutex_lock(&ad->lock);
 	if ((!PP_AD_STATE_IS_INITCFG(ad->state) &&
 			!PP_AD_STS_IS_DIRTY(ad->sts)) &&
-			!input->mode == MDSS_AD_MODE_CALIB) {
+			((input->mode) == MDSS_AD_MODE_CALIB)) {
 		pr_warn("AD not initialized or configured.");
 		ret = -EPERM;
 		goto error;

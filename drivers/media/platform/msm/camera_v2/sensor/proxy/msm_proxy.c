@@ -149,12 +149,6 @@ static int32_t msm_proxy_get_subdev_id(struct msm_proxy_ctrl_t *a_ctrl,
 	return 0;
 }
 
-
-static const struct v4l2_subdev_internal_ops msm_proxy_internal_ops = {
-//	.open = msm_proxy_open,
-//	.close = msm_proxy_close,
-};
-
 int32_t proxy_i2c_read(uint32_t addr, uint16_t *data, enum msm_camera_i2c_data_type data_type)
 {
 	int32_t ret = 0;
