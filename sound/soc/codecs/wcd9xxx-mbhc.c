@@ -466,6 +466,32 @@ static s16 wcd9xxx_get_current_v(struct wcd9xxx_mbhc *mbhc,
 	return ret;
 }
 
+void *wcd9xxx_mbhc_cal_btn_det_mp(
+			    struct wcd9xxx_mbhc_btn_detect_cfg *btn_det,
+			    const enum wcd9xxx_mbhc_btn_det_mem mem)
+{
+	void *ret = &btn_det->_v_btn_low;
+
+	switch (mem) {
+	case MBHC_BTN_DET_GAIN:
+		ret += sizeof(btn_det->_n_cic);
+	case MBHC_BTN_DET_N_CIC:
+		ret += sizeof(btn_det->_n_ready);
+	case MBHC_BTN_DET_N_READY:
+		ret += sizeof(btn_det->_v_btn_high[0]) * btn_det->num_btn;
+	case MBHC_BTN_DET_V_BTN_HIGH:
+		ret += sizeof(btn_det->_v_btn_low[0]) * btn_det->num_btn;
+	case MBHC_BTN_DET_V_BTN_LOW:
+		/* do nothing */
+		break;
+	default:
+		ret = NULL;
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL(wcd9xxx_mbhc_cal_btn_det_mp);
+
 static void wcd9xxx_calibrate_hs_polling(struct wcd9xxx_mbhc *mbhc)
 {
 	struct snd_soc_codec *codec = mbhc->codec;
