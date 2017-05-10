@@ -6506,10 +6506,11 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 			if (dev == wl_to_p2p_bss_ndev(cfg, P2PAPI_BSSCFG_CONNECTION))
 				dev = bcmcfg_to_prmry_ndev(cfg);
 #endif
-			if ((dev == bcmcfg_to_prmry_ndev(cfg)) && cfg->p2p)
+			if ((dev == bcmcfg_to_prmry_ndev(cfg)) && cfg->p2p) {
 				bssidx = wl_to_p2p_bss_bssidx(cfg, P2PAPI_BSSCFG_DEVICE);
 				wl_cfgp2p_set_management_ie(cfg, dev, bssidx,
 				VNDR_IE_PRBRSP_FLAG, (u8 *)(buf + ie_offset), ie_len);
+            }
 			cfg80211_mgmt_tx_status(cfgdev, *cookie, buf, len, true, GFP_KERNEL);
 #if defined(P2P_IE_MISSING_FIX)
 			if (!cfg->p2p_prb_noti) {
