@@ -1607,7 +1607,54 @@
 			< 2265600000  925000 691 >;
 	};
 
-	qcom,cpubw {
+ 	cache: qcom,cache@0 {
+ 		reg = <0 4>;
+ 		compatible = "devfreq-simple-dev";
+ 		clock-name = "l2_clk";
+ 		polling-ms = <1>;
+ 		governor = "cpufreq";
+ 		freq-tbl-khz =
+ 			<  300000 >,
+ 			<  499200 >,
+ 			<  729600 >,
+ 			<  883200 >,
+ 			<  960000 >,
+ 			< 1036800 >,
+ 			< 1190400 >,
+ 			< 1267200 >,
+ 			< 1497600 >,
+ 			< 1574400 >,
+ 			< 1728000 >,
+ 			< 1958400 >,
+ 			< 2035200 >;
+ 
+ 	};
+ 
+	qcom,memlat-cpu {
+		compatible = "qcom,devbw";
+		governor = "powersave";
+		qcom,src-dst-ports = <1 512>, <2 512>;
+		qcom,active-only;
+		qcom,bw-tbl =
+			<  381 /*  50 MHz */ >,
+			<  572 /*  75 MHz */ >,
+			<  762 /* 100 MHz */ >,
+			< 1144 /* 150 MHz */ >,
+			< 1525 /* 200 MHz */ >,
+			< 2342 /* 307 MHz */ >,
+			< 3509 /* 460 MHz */ >,
+			< 4684 /* 614 MHz */ >,
+			< 6103 /* 800 MHz */ >,
+			< 7102 /* 933 MHz */ >;
+	};
+
+	memlat_cpu: qcom,arm-memlat-mon {
+		compatible = "qcom,arm-memlat-mon";
+		qcom,cpulist =	<&CPU0 &CPU1 &CPU2 &CPU3>;
+		qcom,target-dev = <&memlat_cpu>;
+	};
+
+	cpubw: qcom,cpubw {
 		compatible = "qcom,cpubw";
 		qcom,cpu-mem-ports = <1 512>, <2 512>;
 		qcom,bw-tbl =
@@ -1624,12 +1671,68 @@
 			< 7674 /* 1006 MHz */ >;
 	};
 
-	qcom,kraitbw-l2pm {
-		compatible = "qcom,kraitbw-l2pm";
-		interrupts = <0 1 1>;
-		qcom,bytes-per-beat = <8>;
+	mincpubw: qcom,mincpubw {
+		compatible = "qcom,devbw";
+		governor = "powersave";
+		qcom,src-dst-ports = <1 512>, <2 512>;
+		qcom,active-only;
+		qcom,bw-tbl =
+			<  381 /*  50 MHz */ >,
+			<  572 /*  75 MHz */ >,
+			<  762 /* 100 MHz */ >,
+			< 1144 /* 150 MHz */ >,
+			< 1525 /* 200 MHz */ >,
+			< 2342 /* 307 MHz */ >,
+			< 3509 /* 460 MHz */ >,
+			< 4684 /* 614 MHz */ >,
+			< 6103 /* 800 MHz */ >,
+			< 7102 /* 933 MHz */ >;
 	};
 
+ 	qcom,kraitbw-l2pm {
+ 		compatible = "qcom,kraitbw-l2pm";
+ 		interrupts = <0 1 1>;
+ 		qcom,bytes-per-beat = <8>;
+ 		qcom,target-dev = <&cache>;
+ 	};
+ 
+ 	devfreq-cpufreq {
+ 		cpubw-cpufreq {
+ 			target-dev = <&cpubw>;
+ 			cpu-to-dev-map =
+ 				<  300000  572 >,
+ 				<  422400 1144 >,
+ 				<  652800 1525 >,
+ 				<  883200 2342 >,
+ 				< 1190400 3509 >,
+ 				< 1497600 4684 >,
+ 				< 1728000 6103 >,
+ 				< 2457600 7102 >;
+ 		};
+
+ 		cache-cpufreq {
+ 			target-dev = <&cache>;
+ 			cpu-to-dev-map =
+ 				<  300000  300000 >,
+ 				<  422400  422400 >,
+ 				<  652800  499200 >,
+ 				<  883200  576000 >,
+ 				<  960000  960000 >,
+ 				< 1190400 1036800 >,
+ 				< 1267200 1267200 >,
+ 				< 1497600 1497600 >,
+ 				< 1574400 1574400 >,
+ 				< 1728000 1728000 >,
+ 				< 2457600 2035200 >;
+ 		};
+
+		mincpubw-cpufreq {
+			target-dev = <&mincpubw>;
+			cpu-to-dev-map =
+				< 1497600 1525 >;
+		};
+ 	};
+ 
 	qcom,msm-cpufreq@0 {
 		reg = <0 4>;
 		compatible = "qcom,msm-cpufreq";
@@ -2627,3 +2730,4 @@
 &gdsc_usb_hsic {
 	status = "ok";
 };
+
