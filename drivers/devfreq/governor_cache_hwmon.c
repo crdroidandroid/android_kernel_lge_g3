@@ -321,3 +321,4 @@ int register_cache_hwmon(struct cache_hwmon *hwmon)
 
 MODULE_DESCRIPTION("HW monitor based cache freq driver");
 MODULE_LICENSE("GPL v2");
+
