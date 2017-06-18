@@ -387,7 +387,16 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -mcpu=cortex-a15 -mtune=cortex-a15 -mfpu=neon-vfpv4 -marm \
 		   -fno-diagnostics-show-caret -fno-pic \
 		   -Wno-unused-variable \
+           -Wno-unused-const-variable \
 		   -Wno-maybe-uninitialized \
+           -Wno-misleading-indentation \
+           -Wno-bool-compare \
+           -Wno-shift-overflow \
+           -Wno-tautological-compare \
+           -Wno-duplicate-decl-specifier \
+           -Wno-switch-unreachable \
+           -Wno-array-bounds \
+           -std=gnu89 \
 		   $(KERNELFLAGS)
 KBUILD_AFLAGS_KERNEL := $(KERNELFLAGS)
 KBUILD_CFLAGS_KERNEL := $(KERNELFLAGS)
