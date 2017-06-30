@@ -1164,7 +1164,7 @@ static int mtdchar_mmap(struct file *file, struct vm_area_struct *vma)
 	struct mtd_info *mtd = mfi->mtd;
 	struct map_info *map = mtd->priv;
 
-        /* This is broken because it assumes the MTD device is map-based
+	/* This is broken because it assumes the MTD device is map-based
 	   and that mtd->priv is a valid struct map_info.  It should be
 	   replaced with something that uses the mtd_get_unmapped_area()
 	   operation properly. */

@@ -1784,6 +1784,7 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
 {
 	struct pci_dev	*pdev = to_pci_dev(xhci_to_hcd(xhci)->self.controller);
 	struct dev_info	*dev_info, *next;
+	struct xhci_cd  *cur_cd, *next_cd;
 	unsigned long	flags;
 	int size;
 	int i, j, num_ports;
@@ -1805,6 +1806,21 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
 		xhci_ring_free(xhci, xhci->cmd_ring);
 	xhci->cmd_ring = NULL;
 	xhci_dbg(xhci, "Freed command ring\n");
+	list_for_each_entry_safe(cur_cd, next_cd,
+			&xhci->cancel_cmd_list, cancel_cmd_list) {
+		list_del(&cur_cd->cancel_cmd_list);
+		kfree(cur_cd);
+	}
+
+	num_ports = HCS_MAX_PORTS(xhci->hcs_params1);
+	for (i = 0; i < num_ports && xhci->rh_bw; i++) {
+		struct xhci_interval_bw_table *bwt = &xhci->rh_bw[i].bw_table;
+		for (j = 0; j < XHCI_MAX_INTERVAL; j++) {
+			struct list_head *ep = &bwt->interval_bw[j].endpoints;
+			while (!list_empty(ep))
+				list_del_init(ep->next);
+		}
+	}
 
 	for (i = 1; i < MAX_HC_SLOTS; ++i)
 		xhci_free_virt_device(xhci, i);
@@ -1843,15 +1859,8 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
 	}
 	spin_unlock_irqrestore(&xhci->lock, flags);
 
-	num_ports = HCS_MAX_PORTS(xhci->hcs_params1);
-	for (i = 0; i < num_ports; i++) {
-		struct xhci_interval_bw_table *bwt = &xhci->rh_bw[i].bw_table;
-		for (j = 0; j < XHCI_MAX_INTERVAL; j++) {
-			struct list_head *ep = &bwt->interval_bw[j].endpoints;
-			while (!list_empty(ep))
-				list_del_init(ep->next);
-		}
-	}
+	if (!xhci->rh_bw)
+		goto no_bw;
 
 	for (i = 0; i < num_ports; i++) {
 		struct xhci_tt_bw_info *tt, *n;
@@ -1861,6 +1870,7 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
 		}
 	}
 
+no_bw:
 	xhci->num_usb2_ports = 0;
 	xhci->num_usb3_ports = 0;
 	xhci->num_active_eps = 0;
@@ -2272,6 +2282,9 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
 	u32 page_size, temp;
 	int i;
 
+	INIT_LIST_HEAD(&xhci->lpm_failed_devs);
+	INIT_LIST_HEAD(&xhci->cancel_cmd_list);
+
 	page_size = xhci_readl(xhci, &xhci->op_regs->page_size);
 	xhci_dbg(xhci, "Supported page size register = 0x%x\n", page_size);
 	for (i = 0; i < 16; i++) {
@@ -2449,8 +2462,6 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
 		goto fail;
 	if (xhci_setup_port_arrays(xhci, flags))
 		goto fail;
-
-	INIT_LIST_HEAD(&xhci->lpm_failed_devs);
 
 	/* Enable USB 3.0 device notifications for function remote wake, which
 	 * is necessary for allowing USB 3.0 devices to do remote wakeup from

@@ -60,6 +60,7 @@
 #define asm_volatile_goto(x...)	do { asm goto(x); asm (""); } while (0)
 
 #ifdef CONFIG_ARCH_USE_BUILTIN_BSWAP
+<<<<<<< HEAD
 #if __GNUC_MINOR__ >= 4
 #define __HAVE_BUILTIN_BSWAP32__
 #define __HAVE_BUILTIN_BSWAP64__
@@ -67,4 +68,9 @@
 #if __GNUC_MINOR__ >= 8 || (defined(__powerpc__) && __GNUC_MINOR__ >= 6)
 #define __HAVE_BUILTIN_BSWAP16__
 #endif
+=======
+#define __HAVE_BUILTIN_BSWAP32__
+#define __HAVE_BUILTIN_BSWAP64__
+#define __HAVE_BUILTIN_BSWAP16__
+>>>>>>> los/cm-14.1
 #endif /* CONFIG_ARCH_USE_BUILTIN_BSWAP */

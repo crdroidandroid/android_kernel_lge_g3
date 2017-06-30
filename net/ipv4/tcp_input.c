@@ -88,6 +88,9 @@ int sysctl_tcp_app_win __read_mostly = 31;
 int sysctl_tcp_adv_win_scale __read_mostly = 1;
 EXPORT_SYMBOL(sysctl_tcp_adv_win_scale);
 
+/* rfc5961 challenge ack rate limiting */
+int sysctl_tcp_challenge_ack_limit = 1000;
+
 int sysctl_tcp_stdurg __read_mostly;
 int sysctl_tcp_rfc1337 __read_mostly;
 int sysctl_tcp_max_orphans __read_mostly = NR_FILE;
@@ -114,6 +117,7 @@ int sysctl_tcp_default_init_rwnd __read_mostly = TCP_DEFAULT_INIT_RCVWND;
 #define FLAG_DSACKING_ACK	0x800 /* SACK blocks contained D-SACK info */
 #define FLAG_NONHEAD_RETRANS_ACKED	0x1000 /* Non-head rexmitted data was ACKed */
 #define FLAG_SACK_RENEGING	0x2000 /* snd_una advanced to a sacked seq */
+#define FLAG_UPDATE_TS_RECENT	0x4000 /* tcp_replace_ts_recent() */
 
 #define FLAG_ACKED		(FLAG_DATA_ACKED|FLAG_SYN_ACKED)
 #define FLAG_NOT_DUP		(FLAG_DATA|FLAG_WIN_UPDATE|FLAG_ACKED)
@@ -3692,6 +3696,50 @@ static int tcp_process_frto(struct sock *sk, int flag)
 	return 0;
 }
 
+/* RFC 5961 7 [ACK Throttling] */
+static void tcp_send_challenge_ack(struct sock *sk)
+{
+	/* unprotected vars, we dont care of overwrites */
+	static u32 challenge_timestamp;
+	static unsigned int challenge_count;
+	u32 count, now = jiffies / HZ;
+
+	if (now != challenge_timestamp) {
+		u32 half = (sysctl_tcp_challenge_ack_limit + 1) >> 1;
+
+		challenge_timestamp = now;
+		ACCESS_ONCE(challenge_count) = half +
+			    (u32)(((u64)random32() * sysctl_tcp_challenge_ack_limit) >> 32);
+	}
+	count = ACCESS_ONCE(challenge_count);
+	if (count > 0) {
+		ACCESS_ONCE(challenge_count) = count - 1;
+		NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_TCPCHALLENGEACK);
+		tcp_send_ack(sk);
+	}
+}
+
+static void tcp_store_ts_recent(struct tcp_sock *tp)
+{
+	tp->rx_opt.ts_recent = tp->rx_opt.rcv_tsval;
+	tp->rx_opt.ts_recent_stamp = get_seconds();
+}
+
+static void tcp_replace_ts_recent(struct tcp_sock *tp, u32 seq)
+{
+	if (tp->rx_opt.saw_tstamp && !after(seq, tp->rcv_wup)) {
+		/* PAWS bug workaround wrt. ACK frames, the PAWS discard
+		 * extra check below makes sure this can only happen
+		 * for pure ACK frames.  -DaveM
+		 *
+		 * Not only, also it occurs for expired timestamps.
+		 */
+
+		if (tcp_paws_check(&tp->rx_opt, 0))
+			tcp_store_ts_recent(tp);
+	}
+}
+
 /* This routine deals with incoming acks, but not outgoing ones. */
 static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
 {
@@ -3712,8 +3760,14 @@ static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
 	/* If the ack is older than previous acks
 	 * then we can probably ignore it.
 	 */
-	if (before(ack, prior_snd_una))
+	if (before(ack, prior_snd_una)) {
+		/* RFC 5961 5.2 [Blind Data Injection Attack].[Mitigation] */
+		if (before(ack, prior_snd_una - tp->max_window)) {
+			tcp_send_challenge_ack(sk);
+			return -1;
+		}
 		goto old_ack;
+	}
 
 	/* If the ack includes data we haven't sent yet, discard
 	 * this segment (RFC793 Section 3.9).
@@ -3735,6 +3789,12 @@ static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
 
 	prior_fackets = tp->fackets_out;
 	prior_in_flight = tcp_packets_in_flight(tp);
+
+	/* ts_recent update must be made after we are sure that the packet
+	 * is in window.
+	 */
+	if (flag & FLAG_UPDATE_TS_RECENT)
+		tcp_replace_ts_recent(tp, TCP_SKB_CB(skb)->seq);
 
 	if (!(flag & FLAG_SLOWPATH) && after(ack, prior_snd_una)) {
 		/* Window is constant, pure forward advance.
@@ -4032,27 +4092,6 @@ const u8 *tcp_parse_md5sig_option(const struct tcphdr *th)
 }
 EXPORT_SYMBOL(tcp_parse_md5sig_option);
 #endif
-
-static inline void tcp_store_ts_recent(struct tcp_sock *tp)
-{
-	tp->rx_opt.ts_recent = tp->rx_opt.rcv_tsval;
-	tp->rx_opt.ts_recent_stamp = get_seconds();
-}
-
-static inline void tcp_replace_ts_recent(struct tcp_sock *tp, u32 seq)
-{
-	if (tp->rx_opt.saw_tstamp && !after(seq, tp->rcv_wup)) {
-		/* PAWS bug workaround wrt. ACK frames, the PAWS discard
-		 * extra check below makes sure this can only happen
-		 * for pure ACK frames.  -DaveM
-		 *
-		 * Not only, also it occurs for expired timestamps.
-		 */
-
-		if (tcp_paws_check(&tp->rx_opt, 0))
-			tcp_store_ts_recent(tp);
-	}
-}
 
 /* Sorry, PAWS as specified is broken wrt. pure-ACKs -DaveM
  *
@@ -5278,8 +5317,8 @@ out:
 /* Does PAWS and seqno based validation of an incoming segment, flags will
  * play significant role here.
  */
-static int tcp_validate_incoming(struct sock *sk, struct sk_buff *skb,
-			      const struct tcphdr *th, int syn_inerr)
+static bool tcp_validate_incoming(struct sock *sk, struct sk_buff *skb,
+				  const struct tcphdr *th, int syn_inerr)
 {
 	const u8 *hash_location;
 	struct tcp_sock *tp = tcp_sk(sk);
@@ -5304,38 +5343,48 @@ static int tcp_validate_incoming(struct sock *sk, struct sk_buff *skb,
 		 * an acknowledgment should be sent in reply (unless the RST
 		 * bit is set, if so drop the segment and return)".
 		 */
-		if (!th->rst)
+		if (!th->rst) {
+			if (th->syn)
+				goto syn_challenge;
 			tcp_send_dupack(sk, skb);
+		}
 		goto discard;
 	}
 
 	/* Step 2: check RST bit */
 	if (th->rst) {
-		tcp_reset(sk);
+		/* RFC 5961 3.2 :
+		 * If sequence number exactly matches RCV.NXT, then
+		 *     RESET the connection
+		 * else
+		 *     Send a challenge ACK
+		 */
+		if (TCP_SKB_CB(skb)->seq == tp->rcv_nxt)
+			tcp_reset(sk);
+		else
+			tcp_send_challenge_ack(sk);
 		goto discard;
 	}
 
-	/* ts_recent update must be made after we are sure that the packet
-	 * is in window.
-	 */
-	tcp_replace_ts_recent(tp, TCP_SKB_CB(skb)->seq);
-
 	/* step 3: check security and precedence [ignored] */
 
-	/* step 4: Check for a SYN in window. */
-	if (th->syn && !before(TCP_SKB_CB(skb)->seq, tp->rcv_nxt)) {
+	/* step 4: Check for a SYN
+	 * RFC 5691 4.2 : Send a challenge ack
+	 */
+	if (th->syn) {
+syn_challenge:
 		if (syn_inerr)
 			TCP_INC_STATS_BH(sock_net(sk), TCP_MIB_INERRS);
-		NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_TCPABORTONSYN);
-		tcp_reset(sk);
-		return -1;
+		NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_TCPSYNCHALLENGE);
+		tcp_send_challenge_ack(sk);
+		goto discard;
 	}
 
-	return 1;
+	return true;
 
 discard:
 	__kfree_skb(skb);
-	return 0;
+	return false;
 }
 
 /*
@@ -5365,7 +5414,6 @@ int tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
 			const struct tcphdr *th, unsigned int len)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
-	int res;
 
 	/*
 	 *	Header prediction.
@@ -5545,12 +5593,12 @@ slow_path:
 	 *	Standard slow path.
 	 */
 
-	res = tcp_validate_incoming(sk, skb, th, 1);
-	if (res <= 0)
-		return -res;
+	if (!tcp_validate_incoming(sk, skb, th, 1))
+		return 0;
 
 step5:
-	if (th->ack && tcp_ack(sk, skb, FLAG_SLOWPATH) < 0)
+	if (th->ack &&
+	    tcp_ack(sk, skb, FLAG_SLOWPATH | FLAG_UPDATE_TS_RECENT) < 0)
 		goto discard;
 
 	tcp_rcv_rtt_measure_ts(sk, skb);
@@ -5857,7 +5905,6 @@ int tcp_rcv_state_process(struct sock *sk, struct sk_buff *skb,
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	int queued = 0;
-	int res;
 
 	tp->rx_opt.saw_tstamp = 0;
 
@@ -5912,13 +5959,13 @@ int tcp_rcv_state_process(struct sock *sk, struct sk_buff *skb,
 		return 0;
 	}
 
-	res = tcp_validate_incoming(sk, skb, th, 0);
-	if (res <= 0)
-		return -res;
+	if (!tcp_validate_incoming(sk, skb, th, 0))
+		return 0;
 
 	/* step 5: check the ACK field */
 	if (th->ack) {
-		int acceptable = tcp_ack(sk, skb, FLAG_SLOWPATH) > 0;
+		int acceptable = tcp_ack(sk, skb, FLAG_SLOWPATH |
+						  FLAG_UPDATE_TS_RECENT) > 0;
 
 		switch (sk->sk_state) {
 		case TCP_SYN_RECV:

@@ -1835,8 +1835,7 @@ static int _qcrypto_process_aead(struct  crypto_engine *pengine,
 
 	return ret;
 }
-#define list_next_entry(pos, member) \
-		list_entry(pos->member.next, typeof(*pos), member)
+
 static struct crypto_engine *_qcrypto_static_assign_engine(
 					struct crypto_priv *cp)
 {
@@ -4814,9 +4813,9 @@ static ssize_t _debug_stats_read(struct file *file, char __user *buf,
 
 	len = _disp_stats(qcrypto);
 
-	rc = simple_read_from_buffer((void __user *) buf, len,
+	if (len <= count)
+		rc = simple_read_from_buffer((void __user *) buf, len,
 			ppos, (void *) _debug_read_buf, len);
-
 	return rc;
 }
 
