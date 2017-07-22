@@ -88,7 +88,8 @@ static int fb_notifier_callback(struct notifier_block *nb,
 		 * when switching elevators while the screen is off.
 		 */
 		if (delayed_work_pending(&restore_prev))
-			cancel_delayed_work_sync(&restore_prev);
+			if (delayed_work_pending(&restore_prev))
+				cancel_delayed_work_sync(&restore_prev);
 			queue_delayed_work(system_power_efficient_wq, &sleep_sched,
 				msecs_to_jiffies(RESTORE_DELAY_MS));
 	}
