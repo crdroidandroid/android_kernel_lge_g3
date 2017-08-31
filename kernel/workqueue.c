@@ -4004,8 +4004,7 @@ static int __init init_workqueues(void)
 	system_power_efficient_wq = alloc_workqueue("events_power_efficient",
 					      WQ_POWER_EFFICIENT, 0);
 	system_freezable_power_efficient_wq = alloc_workqueue("events_freezable_power_efficient",
-					      WQ_FREEZABLE | WQ_POWER_EFFICIENT,
-					      0);
+					      WQ_FREEZABLE | WQ_POWER_EFFICIENT, 0);
 	BUG_ON(!system_wq || !system_long_wq || !system_nrt_wq ||
 	       !system_unbound_wq || !system_freezable_wq ||
 	       !system_nrt_freezable_wq || !system_power_efficient_wq ||
