@@ -3,7 +3,7 @@
 menuconfig SND_SPI
 	bool "SPI sound devices"
 	depends on SPI
-	default y
+	default n
 	help
 	  Support for sound devices connected via the SPI bus.
 
