@@ -281,7 +281,7 @@ static int __devexit gdsc_remove(struct platform_device *pdev)
 #ifdef CONFIG_SHITTY_VARIANT
 static struct of_device_id gdsc_match_table[] = {
 #else
-static struct of_device_id gdsc_match_table[] __initdata = {
+static struct of_device_id gdsc_match_table[] __refdata = {
 #endif
 	{ .compatible = "qcom,gdsc" },
 	{}
