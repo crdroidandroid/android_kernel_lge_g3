@@ -147,8 +147,6 @@ kexec_hardboot:
 	.long	0x0
 #endif
 
-ENDPROC(relocate_new_kernel)
-
 relocate_new_kernel_end:
 
 	.globl relocate_new_kernel_size
