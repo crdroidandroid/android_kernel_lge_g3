@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017, Sultanxda <sultanxda@gmail.com>
+ *           (C) 2017, Pranav Vashi <neobuddy89@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -16,7 +17,7 @@
 #include <linux/blkdev.h>
 #include <linux/blk_types.h>
 #include <linux/elevator.h>
-#include <linux/fb.h>
+#include <linux/state_notifier.h>
 
 #define NOOP_IOSCHED "noop"
 #define RESTORE_DELAY_MS (5000)
@@ -29,11 +30,12 @@ struct req_queue_data {
 };
 
 static struct delayed_work restore_prev;
-static struct delayed_work sleep_sched;
 static DEFINE_SPINLOCK(init_lock);
 static struct req_queue_data req_queues = {
 	.list = LIST_HEAD_INIT(req_queues.list),
 };
+
+static struct notifier_block notif;
 
 static void change_elevator(struct req_queue_data *r, bool use_noop)
 {
@@ -60,55 +62,38 @@ static void change_all_elevators(struct list_head *head, bool use_noop)
 		change_elevator(r, use_noop);
 }
 
-static int fb_notifier_callback(struct notifier_block *nb,
-		unsigned long action, void *data)
+static int state_notifier_callback(struct notifier_block *this,
+				unsigned long event, void *data)
 {
-	struct fb_event *evdata = data;
-	int *blank = evdata->data;
-
-	/* Parse framebuffer events as soon as they occur */
-	if (action != FB_EARLY_EVENT_BLANK)
-		return NOTIFY_OK;
-
-	switch (*blank) {
-	case FB_BLANK_UNBLANK:
-		/*
-		 * Switch back from noop to the original iosched after a delay
-		 * when the screen is turned on.
-		 */
-		if (delayed_work_pending(&sleep_sched))
-			cancel_delayed_work_sync(&sleep_sched);
+	switch (event) {
+		case STATE_NOTIFIER_ACTIVE:
+			/*
+			 * Switch back from noop to the original iosched after a delay
+			 * when the screen is turned on.
+			 */
 			queue_delayed_work(system_power_efficient_wq, &restore_prev,
 				msecs_to_jiffies(RESTORE_DELAY_MS));
-		break;
-	default:
-		/*
-		 * Switch to noop when the screen turns off. Purposely block
-		 * the fb notifier chain call in case weird things can happen
-		 * when switching elevators while the screen is off.
-		 */
-		if (delayed_work_pending(&restore_prev))
+			break;
+		case STATE_NOTIFIER_SUSPEND:
+			/*
+			 * Switch to noop when the screen turns off. Purposely block
+			 * the state notifier chain call in case weird things can happen
+			 * when switching elevators while the screen is off.
+			 */
 			if (delayed_work_pending(&restore_prev))
 				cancel_delayed_work_sync(&restore_prev);
-			queue_delayed_work(system_power_efficient_wq, &sleep_sched,
-				msecs_to_jiffies(RESTORE_DELAY_MS));
+			change_all_elevators(&req_queues.list, true);
+			break;
+		default:
+			break;
 	}
 
 	return NOTIFY_OK;
 }
 
-static struct notifier_block fb_notifier_callback_nb = {
-	.notifier_call = fb_notifier_callback,
-};
-
 static void restore_prev_fn(struct work_struct *work)
 {
 	change_all_elevators(&req_queues.list, false);
-}
-
-static void set_sleep_sched_fn(struct work_struct *work)
-{
-	change_all_elevators(&req_queues.list, true);
 }
 
 int init_iosched_switcher(struct request_queue *q)
@@ -130,10 +115,13 @@ int init_iosched_switcher(struct request_queue *q)
 
 static int iosched_switcher_core_init(void)
 {
-	INIT_DELAYED_WORK(&restore_prev, restore_prev_fn);
-	INIT_DELAYED_WORK(&sleep_sched, set_sleep_sched_fn);
-	fb_register_client(&fb_notifier_callback_nb);
+	int ret = 0;
 
-	return 0;
+	INIT_DELAYED_WORK(&restore_prev, restore_prev_fn);
+	notif.notifier_call = state_notifier_callback;
+	ret = state_register_client(&notif);
+
+	return ret;
 }
 late_initcall(iosched_switcher_core_init);
+
