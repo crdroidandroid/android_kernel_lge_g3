@@ -161,7 +161,12 @@ config CPU_FREQ_DEFAULT_GOV_SLIM
 	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use the CPUFreq governor 'slim' as default.
-	  	
+
+config CPU_FREQ_DEFAULT_GOV_INTERACTIVEX
+	bool "interactivex"
+	select CPU_FREQ_GOV_INTERACTIVEX
+	help
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -333,6 +338,10 @@ config CPU_FREQ_GOV_SLIM
 	  For details, take a look at linux/Documentation/cpu-freq.
 
 	  If in doubt, say N.
+
+config CPU_FREQ_GOV_INTERACTIVEX
+	tristate "'interactivex' cpufreq policy governor"
+	default y
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
