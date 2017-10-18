@@ -607,7 +607,6 @@ config  ARCH_MSM_KRAITMP
 	select ARCH_MSM_KRAIT
 	select MSM_SMP
 	select HAVE_ARCH_HAS_CURRENT_TIMER
-	select MSM_JTAG if CORESIGHT_ETM
 	bool
 
 config  ARCH_MSM_CORTEXMP
@@ -2448,6 +2447,7 @@ config MSM_DLOAD_MODE
 
 config MSM_JTAG
 	bool "Debug and ETM trace support across power collapse"
+	default N
 	help
 	  Enables support for debugging (specifically breakpoints) and ETM
 	  processor tracing across power collapse both for JTag and OS hosted
@@ -2459,6 +2459,7 @@ config MSM_JTAG
 
 config MSM_JTAG_MM
 	bool "Debug and ETM trace support across power collapse using memory mapped access"
+	default N
 	help
 	  Enables support for debugging (specifically breakpoints) and ETM
 	  processor tracing across power collapse both for JTag and OS hosted
@@ -2474,7 +2475,6 @@ config MSM_JTAG_MM
 config MSM_ETM
 	tristate "Enable MSM ETM and ETB"
 	depends on ARCH_MSM8X60
-	select MSM_JTAG
 	help
 	  Enables embedded trace collection on MSM8660
 
