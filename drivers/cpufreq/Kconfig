@@ -176,6 +176,16 @@ config CPU_FREQ_DEFAULT_GOV_BLU_ACTIVE
 	  loading your cpufreq low-level hardware driver, using the
 	  'interactive' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_ELECTROACTIVE
+	bool "electroactive"
+	select CPU_FREQ_GOV_ELECTROACTIVE
+        select CPU_FREQ_GOV_PERFORMANCE
+	help
+	  Use the CPUFreq governor 'electroactive' as default. This allows
+	  you to get a full dynamic cpu frequency capable system by simply
+	  loading your cpufreq low-level hardware driver, using the
+	  'electroactive' governor for latency-sensitive workloads.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -366,6 +376,16 @@ config CPU_FREQ_GOV_BLU_ACTIVE
 	  module will be called cpufreq_blu_active.
 
 	  If in doubt, say N.
+
+config CPU_FREQ_GOV_ELECTROACTIVE
+	tristate "'electroactive' cpufreq policy governor"
+        select CPU_FREQ_TABLE
+	help
+	  'electroactive' - A tweaked "hybrid" based smart and smooth optimized
+           governor designed for optimization in transition and a balance between
+           performance and power.
+	
+	   If in doubt, say N.
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
