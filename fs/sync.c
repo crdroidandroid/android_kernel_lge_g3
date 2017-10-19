@@ -335,6 +335,14 @@ no_async:
 		fsync_t = ktime_get();
 		ret = vfs_fsync(file, datasync);
 		fput(file);
+		fsync_diff = ktime_sub(ktime_get(), fsync_t);
+		if (ktime_to_ms(fsync_diff) >= 5000) {
+                        pr_info("VFS: %s pid:%d(%s)(parent:%d/%s)\
+				takes %lld ms to fsync %s.\n", __func__,
+				current->pid, current->comm,
+				current->parent->pid, current->parent->comm,
+				ktime_to_ms(fsync_diff), path);
+		}
 	}
 	return ret;
 }
