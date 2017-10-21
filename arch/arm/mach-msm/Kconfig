@@ -282,7 +282,6 @@ config ARCH_MSM8974
 	select MEMORY_HOLE_CARVEOUT
 	select MSM_RPM_STATS_LOG
 	select QMI_ENCDEC
-	select MSM_RPM_LOG
 	select ARCH_WANT_KMAP_ATOMIC_FLUSH
 	select KRAIT_REGULATOR
 	select ENABLE_VMALLOC_SAVINGS
@@ -2318,6 +2317,7 @@ config MSM_BUSPM_DEV
 config MSM_TZ_LOG
 	tristate "MSM Trust Zone (TZ) Log Driver"
 	depends on DEBUG_FS
+	default n
 	help
 	  This option enables a driver with a debugfs interface for messages
 	  produced by the Secure code (Trust zone). These messages provide
