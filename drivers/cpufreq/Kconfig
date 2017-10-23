@@ -162,11 +162,6 @@ config CPU_FREQ_DEFAULT_GOV_SLIM
 	help
 	  Use the CPUFreq governor 'slim' as default.
 
-config CPU_FREQ_DEFAULT_GOV_INTERACTIVEX
-	bool "interactivex"
-	select CPU_FREQ_GOV_INTERACTIVEX
-	help
-
 config CPU_FREQ_DEFAULT_GOV_BLU_ACTIVE
 	bool "blu_active"
 	select CPU_FREQ_GOV_BLU_ACTIVE
@@ -357,10 +352,6 @@ config CPU_FREQ_GOV_SLIM
 	  For details, take a look at linux/Documentation/cpu-freq.
 
 	  If in doubt, say N.
-
-config CPU_FREQ_GOV_INTERACTIVEX
-	tristate "'interactivex' cpufreq policy governor"
-	default y
 
 config CPU_FREQ_GOV_BLU_ACTIVE
 	tristate "'blu_active' cpufreq policy governor"
