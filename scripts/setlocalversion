@@ -42,59 +42,6 @@ scm_version()
 		short=true
 	fi
 
-	# Check for git and a git repo.
-	if test -d .git && head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
-
-		# If we are at a tagged commit (like "v2.6.30-rc6"), we ignore
-		# it, because this version is defined in the top level Makefile.
-		if atag="`git describe --exact-match --abbrev=0 2>/dev/null`"; then
-			# Make sure we're at the tag that matches the Makefile.
-			# If not place the hash of the tag as well for
-			# v2.6.30-rc5-g314aef
-			if [ "x$atag" != "x$VERSION" ]; then
-				# If only the short version is requested,
-				# don't bother running further git commands
-				if $short; then
-					echo "+"
-					return
-				fi
-				printf '%s%s' -g "`git show-ref -s --abbrev --tags $atag 2>/dev/null`"
-			fi
-		else
-
-			# If only the short version is requested, don't bother
-			# running further git commands
-			if $short; then
-				echo "+"
-				return
-			fi
-			# If we are past a tagged commit (like
-			# "v2.6.30-rc5-302-g72357d5"), we pretty print it and
-			# include the hash of any new tag on top.
-			if atag="`git describe 2>/dev/null`"; then
-				tag="`git describe --abbrev=0 2>/dev/null`"
-				commit="`echo "$atag" | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}'`"
-				printf '%s%s%s' -g "`git show-ref -s --abbrev --tags $tag 2>/dev/null`" $commit
-			fi
-		fi
-
-		# Is this git on svn?
-		if git config --get svn-remote.svn.url >/dev/null; then
-			printf -- '-svn%s' "`git svn find-rev $head`"
-		fi
-
-		# Update index only on r/w media
-		[ -w . ] && git update-index --refresh --unmerged > /dev/null
-
-		# Check for uncommitted changes
-		if git diff-index --name-only HEAD | grep -qv "^scripts/package"; then
-			printf '%s' -dirty
-		fi
-
-		# All done with git
-		return
-	fi
-
 	# Check for mercurial and a mercurial repo.
 	if test -d .hg && hgid=`hg id 2>/dev/null`; then
 		# Do we have an tagged version?  If so, latesttagdistance == 1
