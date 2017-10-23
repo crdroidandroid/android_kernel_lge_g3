@@ -410,9 +410,6 @@ extern struct cpufreq_governor cpufreq_gov_yankactive;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SLIM)
 extern struct cpufreq_governor cpufreq_gov_slim;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_slim)
-#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_BLU_ACTIVE)
-extern struct cpufreq_governor cpufreq_gov_blu_active;
-#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_blu_active)
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ELECTROACTIVE)
 extern struct cpufreq_governor cpufreq_gov_electroactive;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_electroactive)
