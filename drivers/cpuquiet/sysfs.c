@@ -22,6 +22,7 @@
 #include <linux/slab.h>
 #include <linux/cpu.h>
 #include <linux/cpuquiet.h>
+#include <linux/module.h>
 
 #include "cpuquiet.h"
 
