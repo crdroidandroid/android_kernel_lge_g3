@@ -26,6 +26,7 @@
 #include <linux/slab.h>
 #include <linux/input.h>
 #include <linux/time.h>
+#include "../../kernel/sched/sched.h"
 
 struct cpu_sync {
 	struct task_struct *thread;
