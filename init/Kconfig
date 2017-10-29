@@ -574,7 +574,7 @@ config IKCONFIG_PROC
 config LOG_BUF_SHIFT
 	int "Kernel log buffer size (16 => 64KB, 17 => 128KB)"
 	range 12 21
-	default 17
+	default 15
 	depends on PRINTK
 	help
 	  Select kernel log buffer size as a power of 2.
@@ -1252,7 +1252,7 @@ config PCI_QUIRKS
           unaffected by PCI quirks.
 
 config SLUB_DEBUG
-	default y
+	default n
 	bool "Enable SLUB debugging support" if EXPERT
 	depends on SLUB && SYSFS
 	help

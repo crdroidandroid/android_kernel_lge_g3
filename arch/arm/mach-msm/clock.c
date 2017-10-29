@@ -776,8 +776,6 @@ int msm_clock_register(struct clk_lookup *table, size_t size)
 
 	clkdev_add_table(table, size);
 
-	clock_debug_register(table, size);
-
 	mutex_unlock(&msm_clock_init_lock);
 
 	return 0;
