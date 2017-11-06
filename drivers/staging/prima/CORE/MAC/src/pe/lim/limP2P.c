@@ -1166,7 +1166,7 @@ void limSendP2PActionFrame(tpAniSirGlobal pMac, tpSirMsgQ pMsg)
 
 #ifdef WLAN_FEATURE_11W
     pActionHdr = (tpSirMacActionFrameHdr) (pFrame + sizeof(tSirMacMgmtHdr));
-
+	pMacHdr    = (tpSirMacMgmtHdr ) pFrame;
     /*
      * Setting Protected bit for SA_QUERY Action Frame
      * This has to be based on the current Connection with the station
@@ -1176,7 +1176,6 @@ void limSendP2PActionFrame(tpAniSirGlobal pMac, tpSirMsgQ pMsg)
     if ((SIR_MAC_MGMT_ACTION == pFc->subType) &&
         (SIR_MAC_ACTION_SA_QUERY == pActionHdr->category))
     {
-        pMacHdr    = (tpSirMacMgmtHdr ) pFrame;
         psessionEntry = peFindSessionByBssid(pMac,
                         (tANI_U8*)pMbMsg->data + BSSID_OFFSET, &sessionId);
 
