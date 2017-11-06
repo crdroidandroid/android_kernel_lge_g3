@@ -44,6 +44,7 @@
 #include <mach/rpm-smd.h>
 #include <mach/scm.h>
 #include <linux/sched.h>
+#include <linux/ratelimit.h>
 
 #define MAX_CURRENT_UA 1000000
 #define MAX_RAILS 5
@@ -1384,10 +1385,10 @@ static void __ref check_temp(struct work_struct *work)
 	long temp = 0;
 	int ret = 0;
 
-	do_therm_reset();
-
 	if (!msm_thermal_probed)
 		return;
+
+	do_therm_reset();
 
 	ret = therm_get_temp(msm_thermal_info.sensor_id, THERM_TSENS_ID, &temp);
 	if (ret) {
@@ -1444,7 +1445,8 @@ static int hotplug_notify(enum thermal_trip_type type, int temp, void *data)
 {
 	struct cpu_info *cpu_node = (struct cpu_info *)data;
 
-	pr_info("%s reach temp threshold: %d\n", cpu_node->sensor_type, temp);
+	pr_info_ratelimited("%s reach temp threshold: %d\n",
+			       cpu_node->sensor_type, temp);
 
 	if (!(msm_thermal_info.core_control_mask & BIT(cpu_node->cpu)))
 		return 0;
@@ -1611,16 +1613,17 @@ static int freq_mitigation_notify(enum thermal_trip_type type,
 	switch (type) {
 	case THERMAL_TRIP_CONFIGURABLE_HI:
 		if (!cpu_node->max_freq) {
-			pr_info("Mitigating CPU%d frequency to %d\n",
-				cpu_node->cpu,
-				msm_thermal_info.freq_limit);
+			pr_info_ratelimited(
+				"Mitigating CPU%d frequency to %d\n",
+				cpu_node->cpu, msm_thermal_info.freq_limit);
 
 			cpu_node->max_freq = true;
 		}
 		break;
 	case THERMAL_TRIP_CONFIGURABLE_LOW:
 		if (cpu_node->max_freq) {
-			pr_info("Removing frequency mitigation for CPU%d\n",
+			pr_info_ratelimited(
+				"Removing frequency mitigation for CPU%d\n",
 				cpu_node->cpu);
 
 			cpu_node->max_freq = false;
