@@ -419,7 +419,7 @@ void trace_wake_up(void)
 
 	if (trace_flags & TRACE_ITER_BLOCK)
 		return;
-	schedule_delayed_work(&wakeup_work, delay);
+	queue_delayed_work(system_power_efficient_wq,&wakeup_work, delay);
 }
 
 static int __init set_buf_size(char *str)

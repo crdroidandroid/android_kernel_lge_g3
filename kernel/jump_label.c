@@ -83,7 +83,7 @@ static void __static_key_slow_dec(struct static_key *key,
 
 	if (rate_limit) {
 		atomic_inc(&key->enabled);
-		schedule_delayed_work(work, rate_limit);
+		queue_delayed_work(system_power_efficient_wq,work, rate_limit);
 	} else {
 		if (!jump_label_get_branch_default(key))
 			jump_label_update(key, JUMP_LABEL_DISABLE);

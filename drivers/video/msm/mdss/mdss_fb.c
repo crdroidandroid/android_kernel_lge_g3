@@ -1093,7 +1093,7 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 
 			/* Start the work thread to signal idle time */
 			if (mfd->idle_time)
-				schedule_delayed_work(&mfd->idle_notify_work,
+				queue_delayed_work(system_power_efficient_wq,&mfd->idle_notify_work,
 					msecs_to_jiffies(mfd->idle_time));
 		}
 
@@ -2120,7 +2120,7 @@ static int __mdss_fb_sync_buf_done_callback(struct notifier_block *p,
 	case MDP_NOTIFY_FRAME_BEGIN:
 		if (mfd->idle_time) {
 			cancel_delayed_work_sync(&mfd->idle_notify_work);
-			schedule_delayed_work(&mfd->idle_notify_work,
+			queue_delayed_work(system_power_efficient_wq,&mfd->idle_notify_work,
 				msecs_to_jiffies(mfd->idle_time));
 		}
 		break;

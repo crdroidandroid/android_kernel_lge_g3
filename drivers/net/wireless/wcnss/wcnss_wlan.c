@@ -1089,7 +1089,7 @@ static void wcnss_smd_notify_event(void *data, unsigned int event)
 		schedule_work(&penv->wcnssctrl_version_work);
 		schedule_work(&penv->wcnss_pm_config_work);
 		__cancel_delayed_work(&penv->wcnss_pm_qos_del_req);
-		schedule_delayed_work(&penv->wcnss_pm_qos_del_req, 0);
+		queue_delayed_work(system_power_efficient_wq,&penv->wcnss_pm_qos_del_req, 0);
 
 		break;
 
@@ -1187,7 +1187,7 @@ wcnss_wlan_ctrl_probe(struct platform_device *pdev)
 
 	/* Schedule a work to do any post boot up activity */
 	INIT_DELAYED_WORK(&penv->wcnss_work, wcnss_post_bootup);
-	schedule_delayed_work(&penv->wcnss_work, msecs_to_jiffies(10000));
+	queue_delayed_work(system_power_efficient_wq,&penv->wcnss_work, msecs_to_jiffies(10000));
 
 	return 0;
 }
@@ -1629,7 +1629,7 @@ static void wcnss_notify_vbat(enum qpnp_tm_state state, void *ctx)
 
 	qpnp_adc_tm_channel_measure(penv->adc_tm_dev,
 			&penv->vbat_monitor_params);
-	schedule_delayed_work(&penv->vbatt_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq,&penv->vbatt_work, msecs_to_jiffies(2000));
 	mutex_unlock(&penv->vbat_monitor_mutex);
 }
 
@@ -2836,7 +2836,7 @@ static int wcnss_notif_cb(struct notifier_block *this, unsigned long code,
          if (code == SUBSYS_BEFORE_SHUTDOWN) {
                  penv->is_shutdown = 1;
                  wcnss_disable_pc_add_req();
-                 schedule_delayed_work(&penv->wcnss_pm_qos_del_req,
+                 queue_delayed_work(system_power_efficient_wq,&penv->wcnss_pm_qos_del_req,
                                  msecs_to_jiffies(WCNSS_PM_QOS_TIMEOUT));
          } else if (code == SUBSYS_POWERUP_FAILURE) {
                  wcnss_pronto_log_debug_regs();

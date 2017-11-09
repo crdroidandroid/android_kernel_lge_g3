@@ -773,7 +773,7 @@ static int wlan_hdd_request_remain_on_channel( struct wiphy *wiphy,
 
                 mutex_unlock(&pHddCtx->roc_lock);
 
-                schedule_delayed_work(&pAdapter->roc_work,
+                queue_delayed_work(system_power_efficient_wq,&pAdapter->roc_work,
                         msecs_to_jiffies(pHddCtx->cfg_ini->gP2PListenDeferInterval));
                 hddLog(VOS_TRACE_LEVEL_INFO, "Defer interval is %hu, pAdapter %p",
                         pHddCtx->cfg_ini->gP2PListenDeferInterval, pAdapter);

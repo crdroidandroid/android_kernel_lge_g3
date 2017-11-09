@@ -452,7 +452,7 @@ out:
 	else
 		interval_ms = info->thermal_poll_ms;
 
-	schedule_delayed_work(&core->temperature_work,
+	queue_delayed_work(system_power_efficient_wq,&core->temperature_work,
 			msecs_to_jiffies(interval_ms));
 }
 
@@ -1176,7 +1176,7 @@ int msm_dcvs_freq_sink_start(int dcvs_core_id)
 
 	core->flags |= CORE_FLAG_TEMP_UPDATE;
 	INIT_DELAYED_WORK(&core->temperature_work, msm_dcvs_report_temp_work);
-	schedule_delayed_work(&core->temperature_work,
+	queue_delayed_work(system_power_efficient_wq,&core->temperature_work,
 			      msecs_to_jiffies(core->info->thermal_poll_ms));
 
 	core->idle_enable(core->type_core_num, MSM_DCVS_ENABLE_IDLE_PULSE);

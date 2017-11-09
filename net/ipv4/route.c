@@ -926,7 +926,7 @@ nofree:
 static void rt_worker_func(struct work_struct *work)
 {
 	rt_check_expire();
-	schedule_delayed_work(&expires_work, ip_rt_gc_interval);
+	queue_delayed_work(system_power_efficient_wq,&expires_work, ip_rt_gc_interval);
 }
 
 /*
@@ -3535,7 +3535,7 @@ int __init ip_rt_init(void)
 
 	INIT_DELAYED_WORK_DEFERRABLE(&expires_work, rt_worker_func);
 	expires_ljiffies = jiffies;
-	schedule_delayed_work(&expires_work,
+	queue_delayed_work(system_power_efficient_wq,&expires_work,
 		net_random() % ip_rt_gc_interval + ip_rt_gc_interval);
 
 	if (ip_rt_proc_init())

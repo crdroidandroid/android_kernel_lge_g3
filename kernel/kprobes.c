@@ -553,7 +553,7 @@ static __kprobes void do_free_cleaned_kprobes(struct list_head *free_list)
 static __kprobes void kick_kprobe_optimizer(void)
 {
 	if (!delayed_work_pending(&optimizing_work))
-		schedule_delayed_work(&optimizing_work, OPTIMIZE_DELAY);
+		queue_delayed_work(system_power_efficient_wq,&optimizing_work, OPTIMIZE_DELAY);
 }
 
 /* Kprobe jump optimizer */

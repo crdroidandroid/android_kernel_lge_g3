@@ -1059,7 +1059,7 @@ static void qpnp_iadc_work(struct work_struct *work)
 			pr_debug("periodic IADC calibration failed\n");
 	}
 
-	schedule_delayed_work(&iadc->iadc_work,
+	queue_delayed_work(system_power_efficient_wq,&iadc->iadc_work,
 		round_jiffies_relative(msecs_to_jiffies
 				(QPNP_IADC_CALIB_SECONDS)));
 	return;
@@ -1616,7 +1616,7 @@ static int __devinit qpnp_iadc_probe(struct spmi_device *spmi)
 	if (iadc->iadc_poll_eoc)
 		device_init_wakeup(iadc->dev, 1);
 
-	schedule_delayed_work(&iadc->iadc_work,
+	queue_delayed_work(system_power_efficient_wq,&iadc->iadc_work,
 			round_jiffies_relative(msecs_to_jiffies
 					(QPNP_IADC_CALIB_SECONDS)));
 	return 0;
