@@ -1,16 +1,23 @@
 /*
- * AutoSMP Hotplug Driver
+ * drivers/soc/qcom/autosmp.c
  *
- * Automatically hotplug/unplug multiple CPU cores
- * based on cpu load and suspend state.
+ * automatically hotplug/unplug multiple cpu cores
+ * based on cpu load and suspend state
  *
- * Based on the msm_mpdecision code by
+ * based on the msm_mpdecision code by
  * Copyright (c) 2012-2013, Dennis Rassmann <showp1984@gmail.com>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ * Copyright (C) 2013-2014, Rauf Gungor, http://github.com/mrg666
+ * rewrite to simplify and optimize, Jul. 2013, http://goo.gl/cdGw6x
+ * optimize more, generalize for n cores, Sep. 2013, http://goo.gl/448qBz
+ * generalize for all arch, rename as autosmp, Dec. 2013, http://goo.gl/x5oyhy
  *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version. For more details, see the GNU
+ * General Public License included with the Linux kernel or available
+ * at www.gnu.org/licenses
  */
 
 #include <linux/moduleparam.h>
@@ -21,16 +28,19 @@
 #include <linux/slab.h>
 #include <linux/hrtimer.h>
 #include <linux/input.h>
+#ifdef CONFIG_STATE_NOTIFIER
+#include <linux/state_notifier.h>
+#endif
 
 #define DEBUG 0
 
 #define ASMP_TAG			"AutoSMP:"
 #define ASMP_ENABLED			false
-#define DEFAULT_BOOST_LOCK_DUR		500 * 1000L
+#define DEFAULT_BOOST_LOCK_DUR		800 * 1000L
 #define DEFAULT_NR_CPUS_BOOSTED		2
-#define DEFAULT_UPDATE_RATE		20
+#define DEFAULT_UPDATE_RATE		30
 #define MIN_INPUT_INTERVAL		150 * 1000L
-#define DEFAULT_MIN_BOOST_FREQ		1497600
+#define DEFAULT_MIN_BOOST_FREQ		1728000
 
 #if DEBUG
 struct asmp_cpudata_t {
@@ -55,14 +65,17 @@ static struct asmp_param_struct {
 	unsigned int min_boost_freq;
 	bool enabled;
 	u64 boost_lock_dur;
+#ifdef CONFIG_STATE_NOTIFIER
+	struct notifier_block notif;
+#endif
 } asmp_param = {
 	.delay = DEFAULT_UPDATE_RATE,
 	.max_cpus = NR_CPUS,
 	.min_cpus = 1,
-	.cpufreq_up = 80,
-	.cpufreq_down = 60,
+	.cpufreq_up = 95,
+	.cpufreq_down = 80,
 	.cycle_up = 1,
-	.cycle_down = 2,
+	.cycle_down = 1,
 	.min_boost_freq = DEFAULT_MIN_BOOST_FREQ,
 	.cpus_boosted = DEFAULT_NR_CPUS_BOOSTED,
 	.enabled = ASMP_ENABLED,
@@ -104,7 +117,7 @@ static void __cpuinit asmp_work_fn(struct work_struct *work)
 	unsigned int nr_cpu_online;
 	unsigned int min_boost_freq = asmp_param.min_boost_freq;
 	u64 now;
-
+	
 	if (!asmp_param.enabled)
 		return;
 
@@ -180,6 +193,61 @@ static void __cpuinit asmp_work_fn(struct work_struct *work)
 	reschedule_hotplug_work();
 }
 
+#ifdef CONFIG_STATE_NOTIFIER
+static void asmp_suspend(void)
+{
+	unsigned int cpu;
+
+	/* Flush hotplug workqueue */
+	flush_workqueue(asmp_workq);
+	cancel_delayed_work_sync(&asmp_work);
+
+	/* unplug online cpu cores */
+	for_each_possible_cpu(cpu)
+		if (cpu != 0 && cpu_online(cpu))
+			cpu_down(cpu);
+
+	pr_info(ASMP_TAG"Screen -> Off. Suspended.\n");
+}
+
+static void __ref asmp_resume(void)
+{
+	unsigned int cpu;
+
+	/* Fire up all CPUs */
+	for_each_possible_cpu(cpu)
+		if (cpu_is_offline(cpu))
+			cpu_up(cpu);
+
+	last_boost_time = ktime_to_us(ktime_get());
+
+	/* Resume hotplug workqueue */
+	INIT_DELAYED_WORK(&asmp_work, asmp_work_fn);
+	reschedule_hotplug_work();
+	pr_info(ASMP_TAG"Screen -> On. Resumed.\n");
+}
+
+static int state_notifier_callback(struct notifier_block *this,
+				unsigned long event, void *data)
+{
+	if (!asmp_param.enabled || !hotplug_suspend)
+                return NOTIFY_OK;
+
+	switch (event) {
+		case STATE_NOTIFIER_ACTIVE:
+			asmp_resume();
+			break;
+		case STATE_NOTIFIER_SUSPEND:
+			asmp_suspend();
+			break;
+		default:
+			break;
+	}
+
+	return NOTIFY_OK;
+}
+#endif
+
 static void autosmp_input_event(struct input_handle *handle, unsigned int type,
 				unsigned int code, int value)
 {
@@ -187,6 +255,11 @@ static void autosmp_input_event(struct input_handle *handle, unsigned int type,
 
 	if (!asmp_param.enabled)
 		return;
+
+#ifdef CONFIG_STATE_NOTIFIER
+	if (state_suspended)
+		return;
+#endif
 
 	now = ktime_to_us(ktime_get());
 	if (now - last_boost_time < MIN_INPUT_INTERVAL)
@@ -284,6 +357,15 @@ static int hotplug_start(void)
 		goto err_wq;
 	}
 
+#ifdef CONFIG_STATE_NOTIFIER
+	asmp_param.notif.notifier_call = state_notifier_callback;
+	if (state_register_client(&asmp_param.notif)) {
+		pr_err("%s: Failed to register State notifier callback\n",
+			ASMP_TAG);
+		goto err_notif;
+	}
+#endif
+
 	ret = input_register_handler(&autosmp_input_handler);
 	if (ret) {
 		pr_err("%s: Failed to register input handler: %d\n",
@@ -297,6 +379,11 @@ static int hotplug_start(void)
 	return ret;
 
 err:
+#ifdef CONFIG_STATE_NOTIFIER
+	state_unregister_client(&asmp_param.notif);
+err_notif:
+	asmp_param.notif.notifier_call = NULL;
+#endif
 	destroy_workqueue(asmp_workq);
 err_wq:
 	asmp_param.enabled = false;
@@ -308,6 +395,10 @@ static void __ref hotplug_stop(void)
 	int cpu;
 
 	input_unregister_handler(&autosmp_input_handler);
+#ifdef CONFIG_STATE_NOTIFIER
+	state_unregister_client(&asmp_param.notif);
+	asmp_param.notif.notifier_call = NULL;
+#endif
 	flush_workqueue(asmp_workq);
 	cancel_delayed_work_sync(&asmp_work);
 	destroy_workqueue(asmp_workq);
