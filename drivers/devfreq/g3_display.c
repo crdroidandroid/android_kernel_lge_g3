@@ -24,7 +24,7 @@ when       who	  what, where, why
 #include <linux/devfreq.h>
 #include <linux/slab.h>
 #include <linux/suspend.h>
-#include <linux/opp.h>
+#include <linux/pm_opp.h>
 #include <linux/kallsyms.h>
 
 #include <linux/g3_display_devfreq.h>
@@ -124,7 +124,7 @@ int g3_display_probe(struct platform_device *pdev){
 
 	/* register opp entries */
 	for(i=0; i<_LV_END_; i++){
-		ret = opp_add(dev, g3_display_opp_table[i].freq,
+		ret = dev_pm_opp_add(dev, g3_display_opp_table[i].freq,
 				g3_display_opp_table[i].volt);
 		if(ret){
 			dev_err(dev, "cannot add opp entries.\n");
@@ -133,7 +133,7 @@ int g3_display_probe(struct platform_device *pdev){
 	}
 
 	/* find opp entry with init frequency */
-	opp = opp_find_freq_floor(dev, &g3_display_profile.initial_freq);
+	opp = dev_pm_opp_find_freq_floor(dev, &g3_display_profile.initial_freq);
 	if(IS_ERR(opp)){
 		dev_err(dev, "invalid initial frequency %lu.\n",
 				g3_display_profile.initial_freq);
@@ -208,7 +208,7 @@ void g3_display_read_fps(struct g3_display_data *data, struct devfreq_dev_status
 	data->fps_data.fps = (fcount - data->fps_data.prev_fcount);
 	data->fps_data.prev_fcount = fcount;
 
-	stat->current_frequency = opp_get_freq(data->curr_opp);
+	stat->current_frequency = dev_pm_opp_get_freq(data->curr_opp);
 	stat->total_time = msm_fb_read_frame_rate();
 	stat->busy_time = (data->fps_data.fps) * (1000 / g3_display_profile.polling_ms);
 }
@@ -286,8 +286,8 @@ int g3_display_profile_target(struct device *dev,
 	int ret = 0;
 	struct g3_display_data *data = dev_get_drvdata(dev);
 	struct opp *opp = devfreq_recommended_opp(dev, _freq, options);
-	unsigned long old_freq = opp_get_freq(data->curr_opp);
-	unsigned long new_freq = opp_get_freq(opp);
+	unsigned long old_freq = dev_pm_opp_get_freq(data->curr_opp);
+	unsigned long new_freq = dev_pm_opp_get_freq(opp);
 	unsigned int new_freq_idx = -1, old_freq_idx = -1;
 
 	if(old_freq == new_freq) return ret;
@@ -298,7 +298,7 @@ int g3_display_profile_target(struct device *dev,
 	if(new_freq_idx > old_freq_idx){
 		if(g3_cur_level < _LV_END_ - 1){
 			*_freq = g3_display_opp_table[g3_cur_level + 1].freq;
-			opp = opp_find_freq_floor(dev, _freq);
+			opp = dev_pm_opp_find_freq_floor(dev, _freq);
 			data->curr_opp = opp;
 
 			ret = g3_display_send_event_to_mdss_display(g3_cur_level + 1, NULL);
@@ -306,7 +306,7 @@ int g3_display_profile_target(struct device *dev,
 	}else{
 		if(g3_cur_level > 0){
 			*_freq = g3_display_opp_table[g3_cur_level - 1].freq;
-			opp = opp_find_freq_floor(dev, _freq);
+			opp = dev_pm_opp_find_freq_floor(dev, _freq);
 			data->curr_opp = opp;
 
 			ret = g3_display_send_event_to_mdss_display(g3_cur_level - 1, NULL);
@@ -316,7 +316,7 @@ int g3_display_profile_target(struct device *dev,
 	// return to previous freq & opp if failed to change fps
 	if(ret) {
 		*_freq = g3_display_opp_table[g3_cur_level].freq;
-		opp = opp_find_freq_floor(dev, _freq);
+		opp = dev_pm_opp_find_freq_floor(dev, _freq);
 		data->curr_opp = opp;
 	}
 

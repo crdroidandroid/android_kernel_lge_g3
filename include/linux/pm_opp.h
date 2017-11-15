@@ -47,7 +47,6 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
 
 int dev_pm_opp_disable(struct device *dev, unsigned long freq);
 
-<<<<<<< HEAD
 struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
 
 #ifdef CONFIG_OF
