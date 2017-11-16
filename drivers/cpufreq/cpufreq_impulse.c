@@ -30,6 +30,9 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <asm/cputime.h>
+#ifdef CONFIG_STATE_NOTIFIER
+#include <linux/state_notifier.h>
+#endif
 
 #include <linux/tick.h>
 #include <linux/moduleparam.h>
@@ -444,7 +447,11 @@ static void cpufreq_impulse_timer(unsigned long data)
 	do_div(cputime_speedadj, delta_time);
 	loadadjfreq = (unsigned int)cputime_speedadj * 100;
 	cpu_load = loadadjfreq / pcpu->policy->cur;
-
+	boosted = boost_val || now < boostpulse_endtime ||
+			check_cpuboost(data) || fast_lane_mode || cpu_load >= go_hispeed_load;
+ #ifdef CONFIG_STATE_NOTIFIER
+ 	boosted = boosted && !state_suspended;
+ #endif
 	if (cpu_load <= go_lowspeed_load && !boost_val) {
 		boosted = false;
 		new_freq = pcpu->policy->cpuinfo.min_freq;
