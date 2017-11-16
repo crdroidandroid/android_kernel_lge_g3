@@ -53,6 +53,11 @@ choice
 	  This option sets which CPUFreq governor shall be loaded at
 	  startup. If in doubt, select 'performance'.
 
+config CPU_FREQ_DEFAULT_GOV_UMBRELLA_CORE
+	bool "umbrella_core"
+	select CPU_FREQ_GOV_UMBRELLA_CORE
+	help
+
 config CPU_FREQ_DEFAULT_GOV_NIGHTMARE
 	bool "nightmare"
 	select CPU_FREQ_GOV_NIGHTMARE
@@ -193,6 +198,15 @@ config CPU_FREQ_DEFAULT_GOV_ELECTROACTIVE
 	  'electroactive' governor for latency-sensitive workloads.
 
 endchoice
+
+config CPU_FREQ_GOV_UMBRELLA_CORE
+	tristate "'umbrella_core' cpufreq policy governor"
+	help
+	  'umbrella_core' - This driver adds a dynamic cpufreq policy governor
+	  designed for latency-sensitive workloads.
+
+	  The governor is based on interactive to provide a resident controller
+	  which interprets unnecessary battery drain as evil.
 
 config CPU_FREQ_GOV_NIGHTMARE
 	tristate "'nightmare' cpufreq governor"
