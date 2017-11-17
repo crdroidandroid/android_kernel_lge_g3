@@ -4847,7 +4847,7 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		prefer_sibling = 1;
 
         init_sd_lb_power_stats(env, sds);
-	load_idx = get_sd_load_idx(sd, idle);
+	load_idx = get_sd_load_idx(env->sd, env->idle);
 
 	do {
 		int local_group;
@@ -5328,6 +5328,7 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 			int *balance)
 {
 	int ld_moved, active_balance = 0;
+ 	int lb_iterations;
 	struct sched_group *group;
 	struct rq *busiest = NULL;
 	unsigned long flags;
