@@ -26,10 +26,6 @@
 
 #include <mach/board_lge.h>
 
-#ifdef CONFIG_POWERSUSPEND
-#include <linux/powersuspend.h>
-#endif
-
 #ifdef CONFIG_STATE_NOTIFIER
 #include <linux/state_notifier.h>
 #endif
@@ -233,10 +229,6 @@ void lm3697_lcd_backlight_set_level(int level)
 		if (backlight_status == BL_ON)
 			ret = lm3697_bl_enable(lm3697_bl, 0);
 			sleep_state = 1;
-#ifdef CONFIG_POWERSUSPEND
-			set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
-#endif
-
 #ifdef CONFIG_STATE_NOTIFIER
 			state_suspend();
 #endif
@@ -244,10 +236,6 @@ void lm3697_lcd_backlight_set_level(int level)
 		if (backlight_status == BL_OFF)
 			ret = lm3697_bl_enable(lm3697_bl, 1);
 			sleep_state = 0;
-#ifdef CONFIG_POWERSUSPEND
-			set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
-#endif
-
 #ifdef CONFIG_STATE_NOTIFIER
 			state_suspend();
 #endif
