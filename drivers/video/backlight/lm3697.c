@@ -26,10 +26,6 @@
 
 #include <mach/board_lge.h>
 
-#ifdef CONFIG_STATE_NOTIFIER
-#include <linux/state_notifier.h>
-#endif
-
 static unsigned int sleep_state = 0;
 module_param_named(sleep_state, sleep_state, uint, 0644);
 
@@ -229,16 +225,10 @@ void lm3697_lcd_backlight_set_level(int level)
 		if (backlight_status == BL_ON)
 			ret = lm3697_bl_enable(lm3697_bl, 0);
 			sleep_state = 1;
-#ifdef CONFIG_STATE_NOTIFIER
-			state_suspend();
-#endif
 	} else{
 		if (backlight_status == BL_OFF)
 			ret = lm3697_bl_enable(lm3697_bl, 1);
 			sleep_state = 0;
-#ifdef CONFIG_STATE_NOTIFIER
-			state_suspend();
-#endif
 	}
 
 	if (ret)
