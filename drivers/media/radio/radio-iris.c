@@ -5230,7 +5230,7 @@ static int __init iris_probe(struct platform_device *pdev)
 }
 
 
-static int __devexit iris_remove(struct platform_device *pdev)
+static int iris_remove(struct platform_device *pdev)
 {
 	int i;
 	struct iris_device *radio = platform_get_drvdata(pdev);
@@ -5262,7 +5262,7 @@ static struct platform_driver iris_driver = {
 		.name   = "iris_fm",
 		.of_match_table = iris_fm_match,
 	},
-	.remove = __devexit_p(iris_remove),
+	.remove = iris_remove,
 };
 
 static int __init iris_radio_init(void)

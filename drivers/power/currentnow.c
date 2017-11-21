@@ -220,7 +220,7 @@ int spmi_cn_add_controller(struct cn_chip *chip, struct spmi_device *spmi)
 
 	return 0;
 }
-static int __devinit cn_probe(struct spmi_device *spmi)
+static int cn_probe(struct spmi_device *spmi)
 {
 	int rc;
 	struct cn_chip *chip;
@@ -284,7 +284,7 @@ static struct of_device_id cn_match_table[] = {
 };
 
 
-static int __devexit cn_remove(struct spmi_device *spmi)
+static int cn_remove(struct spmi_device *spmi)
 {
 	struct cn_chip *chip = dev_get_drvdata(&spmi->dev);
 	power_supply_unregister(&chip->cn_psy);
@@ -320,7 +320,7 @@ static const struct dev_pm_ops cn_pm_ops = {
 
 static struct spmi_driver cn_driver = {
 	.probe		= cn_probe,
-	.remove		= __devexit_p(cn_remove),
+	.remove		= cn_remove,
 	.driver		= {
 		.name		= CURRENTNOW_DEV_NAME,
 		.owner		= THIS_MODULE,

@@ -550,7 +550,7 @@ static struct of_device_id l2pmu_of_device_ids[] = {
 	{},
 };
 
-static int __devinit krait_l2_pmu_device_probe(struct platform_device *pdev)
+static int krait_l2_pmu_device_probe(struct platform_device *pdev)
 {
 	krait_l2_pmu.plat_device = pdev;
 

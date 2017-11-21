@@ -4549,8 +4549,7 @@ void kgsl_device_platform_remove(struct kgsl_device *device)
 }
 EXPORT_SYMBOL(kgsl_device_platform_remove);
 
-static int __devinit
-kgsl_ptdata_init(void)
+static int kgsl_ptdata_init(void)
 {
 	kgsl_driver.ptpool = kgsl_mmu_ptpool_init(kgsl_pagetable_count);
 

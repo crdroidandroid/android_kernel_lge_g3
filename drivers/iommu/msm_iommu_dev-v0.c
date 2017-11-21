@@ -658,7 +658,7 @@ fail:
 	return ret;
 }
 
-static int __devexit msm_iommu_ctx_remove(struct platform_device *pdev)
+static int msm_iommu_ctx_remove(struct platform_device *pdev)
 {
 	platform_set_drvdata(pdev, NULL);
 	return 0;
@@ -676,7 +676,7 @@ static struct platform_driver msm_iommu_driver = {
 		.of_match_table = msm_iommu_match_table,
 	},
 	.probe		= msm_iommu_probe,
-	.remove		= __devexit_p(msm_iommu_remove),
+	.remove		= msm_iommu_remove,
 };
 
 static struct of_device_id msm_iommu_v0_ctx_match_table[] = {
@@ -690,7 +690,7 @@ static struct platform_driver msm_iommu_ctx_driver = {
 		.of_match_table = msm_iommu_v0_ctx_match_table,
 	},
 	.probe		= msm_iommu_ctx_probe,
-	.remove		= __devexit_p(msm_iommu_ctx_remove),
+	.remove		= msm_iommu_ctx_remove,
 };
 
 static int __init msm_iommu_driver_init(void)

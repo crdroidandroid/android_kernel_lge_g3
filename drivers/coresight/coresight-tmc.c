@@ -1378,7 +1378,7 @@ static const struct attribute_group *tmc_etf_attr_grps[] = {
 	NULL,
 };
 
-static int __devinit tmc_etr_bam_init(struct platform_device *pdev,
+static int tmc_etr_bam_init(struct platform_device *pdev,
 				      struct tmc_drvdata *drvdata)
 {
 	struct device *dev = &pdev->dev;
@@ -1550,7 +1550,7 @@ static void tmc_etr_byte_cntr_exit(struct tmc_drvdata *drvdata)
 		tmc_etr_byte_cntr_dev_deregister(drvdata);
 }
 
-static int __devinit tmc_probe(struct platform_device *pdev)
+static int tmc_probe(struct platform_device *pdev)
 {
 	int ret;
 	uint32_t devid;
@@ -1781,7 +1781,7 @@ err0:
 	return ret;
 }
 
-static int __devexit tmc_remove(struct platform_device *pdev)
+static int tmc_remove(struct platform_device *pdev)
 {
 	struct tmc_drvdata *drvdata = platform_get_drvdata(pdev);
 
@@ -1803,7 +1803,7 @@ EXPORT_COMPAT("arm,coresight-tmc");
 
 static struct platform_driver tmc_driver = {
 	.probe          = tmc_probe,
-	.remove         = __devexit_p(tmc_remove),
+	.remove         = tmc_remove,
 	.driver         = {
 		.name   = "coresight-tmc",
 		.owner	= THIS_MODULE,

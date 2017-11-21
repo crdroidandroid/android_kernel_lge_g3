@@ -1087,7 +1087,7 @@ static int max17048_parse_dt(struct device *dev,
 #endif
 
 #define BATT_NOT_PRESENT 200 /*in case of battery not presence */
-static int __devinit max17048_probe(struct i2c_client *client,
+static int max17048_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	struct max17048_chip *chip;
@@ -1338,7 +1338,7 @@ error:
 	return ret;
 }
 
-static int __devexit max17048_remove(struct i2c_client *client)
+static int max17048_remove(struct i2c_client *client)
 {
 	struct max17048_chip *chip = i2c_get_clientdata(client);
 
@@ -1441,7 +1441,7 @@ static struct i2c_driver max17048_i2c_driver = {
 #endif
 	},
 	.probe		= max17048_probe,
-	.remove		= __devexit_p(max17048_remove),
+	.remove		= max17048_remove,
 	.suspend	= max17048_suspend,
 	.resume		= max17048_resume,
 	.id_table	= max17048_id,

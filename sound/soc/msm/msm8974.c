@@ -3427,7 +3427,7 @@ static int msm8974_prepare_us_euro(struct snd_soc_card *card)
 	return 0;
 }
 
-static __devinit int msm8974_asoc_machine_probe(struct platform_device *pdev)
+static int msm8974_asoc_machine_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = &snd_soc_card_msm8974;
 	struct msm8974_asoc_mach_data *pdata;
@@ -3758,7 +3758,7 @@ err:
 	return ret;
 }
 
-static int __devexit msm8974_asoc_machine_remove(struct platform_device *pdev)
+static int msm8974_asoc_machine_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 	struct msm8974_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
@@ -3809,7 +3809,7 @@ static struct platform_driver msm8974_asoc_machine_driver = {
 		.of_match_table = msm8974_asoc_machine_of_match,
 	},
 	.probe = msm8974_asoc_machine_probe,
-	.remove = __devexit_p(msm8974_asoc_machine_remove),
+	.remove = msm8974_asoc_machine_remove,
 };
 module_platform_driver(msm8974_asoc_machine_driver);
 

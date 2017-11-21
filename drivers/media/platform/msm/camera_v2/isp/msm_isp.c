@@ -128,7 +128,7 @@ static int msm_isp_enable_debugfs(struct msm_isp_statistics *stats)
 		return -ENOMEM;
 	return 0;
 }
-static int __devinit vfe_probe(struct platform_device *pdev)
+static int vfe_probe(struct platform_device *pdev)
 {
 	struct vfe_device *vfe_dev;
 	/*struct msm_cam_subdev_info sd_info;*/

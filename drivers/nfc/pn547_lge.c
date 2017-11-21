@@ -548,7 +548,7 @@ err_exit:
     return ret;
 }
 
-static __devexit int pn547_remove(struct i2c_client *client)
+static int pn547_remove(struct i2c_client *client)
 {
     struct pn547_dev *pn547_dev;
 
@@ -596,7 +596,7 @@ static struct i2c_driver pn547_driver = {
         .of_match_table = pn547_match_table,
     },
     .probe = pn547_probe,
-    .remove = __devexit_p(pn547_remove),
+    .remove = pn547_remove,
     .shutdown   = pn547_shutdown,
     .id_table = pn547_id,
 };

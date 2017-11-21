@@ -362,7 +362,7 @@ static struct regmap_config cs35l32_regmap = {
 	.cache_type = REGCACHE_RBTREE,
 };
 
-static __devinit int cs35l32_i2c_probe(struct i2c_client *i2c_client,
+static int cs35l32_i2c_probe(struct i2c_client *i2c_client,
 				       const struct i2c_device_id *id) {
 	struct cs35l32_private *cs35l32;
 	struct device_node *np = i2c_client->dev.of_node;
@@ -461,7 +461,7 @@ static __devinit int cs35l32_i2c_probe(struct i2c_client *i2c_client,
 	return 0;
 }
 
-static __devexit int cs35l32_i2c_remove(struct i2c_client *client) {
+static int cs35l32_i2c_remove(struct i2c_client *client) {
 	snd_soc_unregister_codec(&client->dev);
 	return 0;
 }
@@ -488,7 +488,7 @@ static struct i2c_driver cs35l32_i2c_driver = {
 		   },
 	.id_table = cs35l32_id,
 	.probe = cs35l32_i2c_probe,
-	.remove = __devexit_p(cs35l32_i2c_remove),
+	.remove = cs35l32_i2c_remove,
 
 };
 

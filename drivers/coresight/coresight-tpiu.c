@@ -563,7 +563,7 @@ static const struct attribute_group *tpiu_attr_grps[] = {
 	NULL,
 };
 
-static int __devinit tpiu_parse_of_data(struct platform_device *pdev,
+static int tpiu_parse_of_data(struct platform_device *pdev,
 					struct tpiu_drvdata *drvdata)
 {
 	struct device_node *node = pdev->dev.of_node;
@@ -768,7 +768,7 @@ static int __devinit tpiu_parse_of_data(struct platform_device *pdev,
 	return 0;
 }
 
-static int __devinit tpiu_probe(struct platform_device *pdev)
+static int tpiu_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct device *dev = &pdev->dev;
@@ -844,7 +844,7 @@ static int __devinit tpiu_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit tpiu_remove(struct platform_device *pdev)
+static int tpiu_remove(struct platform_device *pdev)
 {
 	struct tpiu_drvdata *drvdata = platform_get_drvdata(pdev);
 
@@ -859,7 +859,7 @@ static struct of_device_id tpiu_match[] = {
 
 static struct platform_driver tpiu_driver = {
 	.probe          = tpiu_probe,
-	.remove         = __devexit_p(tpiu_remove),
+	.remove         = tpiu_remove,
 	.driver         = {
 		.name   = "coresight-tpiu",
 		.owner	= THIS_MODULE,

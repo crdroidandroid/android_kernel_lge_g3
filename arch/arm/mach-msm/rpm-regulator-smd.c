@@ -1275,7 +1275,7 @@ static struct regulator_ops *vreg_ops[] = {
 	[RPM_REGULATOR_SMD_TYPE_NCP]	= &ncp_ops,
 };
 
-static int __devexit rpm_vreg_device_remove(struct platform_device *pdev)
+static int rpm_vreg_device_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct rpm_regulator *reg;
@@ -1299,7 +1299,7 @@ static int __devexit rpm_vreg_device_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit rpm_vreg_resource_remove(struct platform_device *pdev)
+static int rpm_vreg_resource_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct rpm_regulator *reg, *reg_temp;
@@ -1341,7 +1341,7 @@ static int __devexit rpm_vreg_resource_remove(struct platform_device *pdev)
  * properties which are required to configure individual regulator
  * framework regulators for a given RPM regulator resource.
  */
-static int __devinit rpm_vreg_device_probe(struct platform_device *pdev)
+static int rpm_vreg_device_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct device_node *node = dev->of_node;
@@ -1532,7 +1532,7 @@ fail_free_reg:
  * This probe is called for parent rpm-regulator devices which have
  * properties which are required to identify a given RPM resource.
  */
-static int __devinit rpm_vreg_resource_probe(struct platform_device *pdev)
+static int rpm_vreg_resource_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct device_node *node = dev->of_node;
@@ -1661,7 +1661,7 @@ static struct of_device_id rpm_vreg_match_table_resource[] = {
 
 static struct platform_driver rpm_vreg_device_driver = {
 	.probe = rpm_vreg_device_probe,
-	.remove = __devexit_p(rpm_vreg_device_remove),
+	.remove = rpm_vreg_device_remove,
 	.driver = {
 		.name = "qcom,rpm-regulator-smd",
 		.owner = THIS_MODULE,
@@ -1671,7 +1671,7 @@ static struct platform_driver rpm_vreg_device_driver = {
 
 static struct platform_driver rpm_vreg_resource_driver = {
 	.probe = rpm_vreg_resource_probe,
-	.remove = __devexit_p(rpm_vreg_resource_remove),
+	.remove = rpm_vreg_resource_remove,
 	.driver = {
 		.name = "qcom,rpm-regulator-smd-resource",
 		.owner = THIS_MODULE,

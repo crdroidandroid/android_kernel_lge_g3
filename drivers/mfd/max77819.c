@@ -401,7 +401,7 @@ static const struct i2c_device_id max77819_i2c_ids[] = {
 };
 MODULE_DEVICE_TABLE(i2c, max77819_i2c_ids);
 
-static __devinit int max77819_i2c_probe (struct i2c_client *client,
+static int max77819_i2c_probe (struct i2c_client *client,
 		const struct i2c_device_id *id)
 {
 	struct max77819_core *core = &max77819;
@@ -469,7 +469,7 @@ abort:
 	return rc;
 }
 
-static __devexit int max77819_i2c_remove (struct i2c_client *client)
+static int max77819_i2c_remove (struct i2c_client *client)
 {
 	struct max77819_dev *me = i2c_get_clientdata(client);
 
@@ -520,7 +520,7 @@ static struct i2c_driver max77819_i2c_driver = {
 #endif /* CONFIG_OF */
 	.id_table               = max77819_i2c_ids,
 	.probe                  = max77819_i2c_probe,
-	.remove                 = __devexit_p(max77819_i2c_remove),
+	.remove                 = max77819_i2c_remove,
 };
 
 static __init int max77819_init (void)

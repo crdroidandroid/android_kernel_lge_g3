@@ -100,7 +100,7 @@ static void gpio_keys_polled_close(struct input_polled_dev *dev)
 		pdata->disable(bdev->dev);
 }
 
-static int __devinit gpio_keys_polled_probe(struct platform_device *pdev)
+static int gpio_keys_polled_probe(struct platform_device *pdev)
 {
 	struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
 	struct device *dev = &pdev->dev;
@@ -214,7 +214,7 @@ err_free_bdev:
 	return error;
 }
 
-static int __devexit gpio_keys_polled_remove(struct platform_device *pdev)
+static int gpio_keys_polled_remove(struct platform_device *pdev)
 {
 	struct gpio_keys_polled_dev *bdev = platform_get_drvdata(pdev);
 	struct gpio_keys_platform_data *pdata = bdev->pdata;
@@ -235,7 +235,7 @@ static int __devexit gpio_keys_polled_remove(struct platform_device *pdev)
 
 static struct platform_driver gpio_keys_polled_driver = {
 	.probe	= gpio_keys_polled_probe,
-	.remove	= __devexit_p(gpio_keys_polled_remove),
+	.remove	= gpio_keys_polled_remove,
 	.driver	= {
 		.name	= DRV_NAME,
 		.owner	= THIS_MODULE,

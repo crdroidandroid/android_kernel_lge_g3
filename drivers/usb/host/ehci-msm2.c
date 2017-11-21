@@ -1378,7 +1378,7 @@ struct msm_usb_host_platform_data *ehci_msm2_dt_to_pdata(
 }
 
 static u64 ehci_msm_dma_mask = DMA_BIT_MASK(64);
-static int __devinit ehci_msm2_probe(struct platform_device *pdev)
+static int ehci_msm2_probe(struct platform_device *pdev)
 {
 	struct usb_hcd *hcd;
 	struct resource *res;
@@ -1651,7 +1651,7 @@ put_hcd:
 	return ret;
 }
 
-static int __devexit ehci_msm2_remove(struct platform_device *pdev)
+static int ehci_msm2_remove(struct platform_device *pdev)
 {
 	struct usb_hcd *hcd = platform_get_drvdata(pdev);
 	struct msm_hcd *mhcd = hcd_to_mhcd(hcd);
@@ -1790,7 +1790,7 @@ static const struct of_device_id ehci_msm2_dt_match[] = {
 
 static struct platform_driver ehci_msm2_driver = {
 	.probe	= ehci_msm2_probe,
-	.remove	= __devexit_p(ehci_msm2_remove),
+	.remove	= ehci_msm2_remove,
 	.driver = {
 		.name = "msm_ehci_host",
 #ifdef CONFIG_PM

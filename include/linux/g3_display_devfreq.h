@@ -58,7 +58,7 @@ void g3_release_pm(struct device *device);
 int g3_display_suspend(struct device *dev);
 int g3_display_resume(struct device *dev);
 #endif
-int __devexit g3_display_remove(struct platform_device *pdev);
+int g3_display_remove(struct platform_device *pdev);
 int g3_display_probe(struct platform_device *pdev);
 int g3_display_profile_target(struct device *dev,
 unsigned long *_freq, u32 options);

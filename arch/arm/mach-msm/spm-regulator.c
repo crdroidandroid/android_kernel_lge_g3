@@ -382,7 +382,7 @@ static int qpnp_fts2_init_step_rate(struct spm_vreg *vreg)
 	return rc;
 }
 
-static int __devinit spm_regulator_probe(struct spmi_device *spmi)
+static int spm_regulator_probe(struct spmi_device *spmi)
 {
 	struct device_node *node = spmi->dev.of_node;
 	struct regulator_init_data *init_data;
@@ -480,7 +480,7 @@ static int __devinit spm_regulator_probe(struct spmi_device *spmi)
 	return rc;
 }
 
-static int __devexit spm_regulator_remove(struct spmi_device *spmi)
+static int spm_regulator_remove(struct spmi_device *spmi)
 {
 	struct spm_vreg *vreg = dev_get_drvdata(&spmi->dev);
 
@@ -507,7 +507,7 @@ static struct spmi_driver spm_regulator_driver = {
 		.owner		= THIS_MODULE,
 	},
 	.probe		= spm_regulator_probe,
-	.remove		= __devexit_p(spm_regulator_remove),
+	.remove		= spm_regulator_remove,
 	.id_table	= spm_regulator_id,
 };
 

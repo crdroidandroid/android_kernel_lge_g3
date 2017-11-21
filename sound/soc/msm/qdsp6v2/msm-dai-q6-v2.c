@@ -1068,7 +1068,7 @@ static struct snd_soc_dai_driver msm_dai_q6_incall_record_dai = {
 	.remove = msm_dai_q6_dai_remove,
 };
 
-static int __devinit msm_auxpcm_dev_probe(struct platform_device *pdev)
+static int msm_auxpcm_dev_probe(struct platform_device *pdev)
 {
 	struct msm_dai_q6_auxpcm_dai_data *dai_data;
 	struct msm_dai_auxpcm_pdata *auxpcm_pdata;
@@ -1223,7 +1223,7 @@ fail_pdata_nomem:
 	return rc;
 }
 
-static int __devexit msm_auxpcm_dev_remove(struct platform_device *pdev)
+static int msm_auxpcm_dev_remove(struct platform_device *pdev)
 {
 	struct msm_dai_q6_auxpcm_dai_data *dai_data;
 
@@ -1246,7 +1246,7 @@ static struct of_device_id msm_auxpcm_dev_dt_match[] = {
 
 static struct platform_driver msm_auxpcm_dev_driver = {
 	.probe  = msm_auxpcm_dev_probe,
-	.remove = __devexit_p(msm_auxpcm_dev_remove),
+	.remove = msm_auxpcm_dev_remove,
 	.driver = {
 		.name = "msm-auxpcm-dev",
 		.owner = THIS_MODULE,
@@ -1931,7 +1931,7 @@ fail_cmd:
 static DEVICE_ATTR(rtip, 0644, NULL, msm_setrtip_store);
 #endif
 
-static __devinit int msm_dai_q6_mi2s_dev_probe(struct platform_device *pdev)
+static int msm_dai_q6_mi2s_dev_probe(struct platform_device *pdev)
 {
 	struct msm_dai_q6_mi2s_dai_data *dai_data;
 	const char *q6_mi2s_dev_id = "qcom,msm-dai-q6-mi2s-dev-id";
@@ -2037,7 +2037,7 @@ rtn:
 	return rc;
 }
 
-static __devexit int msm_dai_q6_mi2s_dev_remove(struct platform_device *pdev)
+static int msm_dai_q6_mi2s_dev_remove(struct platform_device *pdev)
 {
 #ifdef CONFIG_SND_SOC_CS35L32
 	device_remove_file(&pdev->dev, &dev_attr_rtip);
@@ -2229,7 +2229,7 @@ MODULE_DEVICE_TABLE(of, msm_dai_q6_mi2s_dev_dt_match);
 
 static struct platform_driver msm_dai_q6_mi2s_driver = {
 	.probe  = msm_dai_q6_mi2s_dev_probe,
-	.remove  = __devexit_p(msm_dai_q6_mi2s_dev_remove),
+	.remove  = msm_dai_q6_mi2s_dev_remove,
 	.driver = {
 		.name = "msm-dai-q6-mi2s",
 		.owner = THIS_MODULE,

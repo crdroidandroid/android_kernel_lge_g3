@@ -1485,7 +1485,7 @@ static int vpe_register_domain(void)
 	return msm_register_domain(&vpe_iommu_layout);
 }
 
-static int __devinit vpe_probe(struct platform_device *pdev)
+static int vpe_probe(struct platform_device *pdev)
 {
 	struct vpe_device *vpe_dev;
 	int rc = 0;
@@ -1643,7 +1643,7 @@ static int vpe_device_remove(struct platform_device *dev)
 
 static struct platform_driver vpe_driver = {
 	.probe = vpe_probe,
-	.remove = __devexit_p(vpe_device_remove),
+	.remove = vpe_device_remove,
 	.driver = {
 		.name = MSM_VPE_DRV_NAME,
 		.owner = THIS_MODULE,

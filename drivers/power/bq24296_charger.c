@@ -3180,7 +3180,7 @@ static void bq24296_remove_debugfs_entries(struct bq24296_chip *chip)
 		debugfs_remove_recursive(chip->dent);
 }
 
-static int __devinit bq24296_init_batt_psy(struct bq24296_chip *chip)
+static int bq24296_init_batt_psy(struct bq24296_chip *chip)
 {
 	int ret;
 	NULL_CHECK(chip, -EINVAL);
@@ -3207,7 +3207,7 @@ static int __devinit bq24296_init_batt_psy(struct bq24296_chip *chip)
 	return 0;
 }
 
-static int __devinit bq24296_init_ac_psy(struct bq24296_chip *chip)
+static int bq24296_init_ac_psy(struct bq24296_chip *chip)
 {
 	int ret = 0;
 	NULL_CHECK(chip, -EINVAL);

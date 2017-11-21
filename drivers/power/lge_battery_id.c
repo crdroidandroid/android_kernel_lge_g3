@@ -62,7 +62,7 @@ static int lge_battery_id_get_property(struct power_supply *psy,
 	return 0;
 }
 
-static __devinit int lge_battery_id_probe(struct platform_device *pdev)
+static int lge_battery_id_probe(struct platform_device *pdev)
 {
 	struct lge_battery_id_platform_data *pdata =
 		dev_get_platdata(&pdev->dev);
@@ -118,7 +118,7 @@ err_register:
 	return ret;
 }
 
-static int __devexit lge_battery_id_remove(struct platform_device *pdev)
+static int lge_battery_id_remove(struct platform_device *pdev)
 {
 	struct lge_battery_id_info *info = platform_get_drvdata(pdev);
 
@@ -154,7 +154,7 @@ static struct platform_driver lge_battery_id_driver = {
 		.pm     = &lge_battery_id_pm_ops,
 	},
 	.probe  = lge_battery_id_probe,
-	.remove = __devexit_p(lge_battery_id_remove),
+	.remove = lge_battery_id_remove,
 };
 
 static int __init lge_battery_id_init(void)

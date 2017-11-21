@@ -1559,7 +1559,7 @@ static const struct regmap_config max8971_regmap_config = {
 	.cache_type = REGCACHE_NONE,
 };
 
-static __devinit int max8971_probe(struct i2c_client *client,
+static int max8971_probe(struct i2c_client *client,
 		const struct i2c_device_id *id)
 {
 	struct max8971 *me;
@@ -1695,7 +1695,7 @@ abort:
 	return rc;
 }
 
-static __devexit int max8971_remove(struct i2c_client *client)
+static int max8971_remove(struct i2c_client *client)
 {
 	struct max8971 *me = i2c_get_clientdata(client);
 
@@ -1947,7 +1947,7 @@ static struct i2c_driver max8971_i2c_driver = {
 #endif /* CONFIG_OF */
 	.id_table			= max8971_i2c_ids,
 	.probe				= max8971_probe,
-	.remove				= __devexit_p(max8971_remove),
+	.remove				= max8971_remove,
 };
 
 static __init int max8971_init(void)

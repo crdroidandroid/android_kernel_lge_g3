@@ -117,7 +117,7 @@ bool coresight_fuse_apps_access_disabled(void)
 }
 EXPORT_SYMBOL(coresight_fuse_apps_access_disabled);
 
-static int __devinit fuse_probe(struct platform_device *pdev)
+static int fuse_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct coresight_platform_data *pdata;
@@ -163,7 +163,7 @@ static int __devinit fuse_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit fuse_remove(struct platform_device *pdev)
+static int fuse_remove(struct platform_device *pdev)
 {
 	struct fuse_drvdata *drvdata = platform_get_drvdata(pdev);
 
@@ -178,7 +178,7 @@ static struct of_device_id fuse_match[] = {
 
 static struct platform_driver fuse_driver = {
 	.probe          = fuse_probe,
-	.remove         = __devexit_p(fuse_remove),
+	.remove         = fuse_remove,
 	.driver         = {
 		.name   = "coresight-fuse",
 		.owner	= THIS_MODULE,

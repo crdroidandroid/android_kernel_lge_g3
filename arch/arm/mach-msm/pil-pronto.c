@@ -424,7 +424,7 @@ static int wcnss_ramdump(int enable, const struct subsys_desc *subsys)
 	return pil_do_ramdump(&drv->desc, drv->ramdump_dev);
 }
 
-static int __devinit pil_pronto_probe(struct platform_device *pdev)
+static int pil_pronto_probe(struct platform_device *pdev)
 {
 	struct pronto_data *drv;
 	struct resource *res;
@@ -541,7 +541,7 @@ err_subsys:
 	return ret;
 }
 
-static int __devexit pil_pronto_remove(struct platform_device *pdev)
+static int pil_pronto_remove(struct platform_device *pdev)
 {
 	struct pronto_data *drv = platform_get_drvdata(pdev);
 	subsys_unregister(drv->subsys);
@@ -557,7 +557,7 @@ static struct of_device_id msm_pil_pronto_match[] = {
 
 static struct platform_driver pil_pronto_driver = {
 	.probe = pil_pronto_probe,
-	.remove = __devexit_p(pil_pronto_remove),
+	.remove = pil_pronto_remove,
 	.driver = {
 		.name = "pil_pronto",
 		.owner = THIS_MODULE,

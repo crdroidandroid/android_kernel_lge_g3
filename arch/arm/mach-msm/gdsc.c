@@ -267,7 +267,7 @@ static int gdsc_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit gdsc_remove(struct platform_device *pdev)
+static int gdsc_remove(struct platform_device *pdev)
 {
 	struct gdsc *sc = platform_get_drvdata(pdev);
 	regulator_unregister(sc->rdev);
@@ -285,7 +285,7 @@ static struct of_device_id gdsc_match_table[] __refdata = {
 
 static struct platform_driver gdsc_driver = {
 	.probe		= gdsc_probe,
-	.remove		= __devexit_p(gdsc_remove),
+	.remove		= gdsc_remove,
 	.driver		= {
 		.name		= "gdsc",
 		.of_match_table = gdsc_match_table,

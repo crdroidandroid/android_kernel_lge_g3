@@ -2850,8 +2850,7 @@ static enum power_supply_property max77819_charger_ac_psy_props[] = {
 	POWER_SUPPLY_PROP_CHARGING_COMPLETE,
 };
 
-static int __devinit
-max77819_charger_init_batt_psy(struct max77819_charger *me)
+static int max77819_charger_init_batt_psy(struct max77819_charger *me)
 {
 	int rc = 0;
 	struct device *dev = me->dev;
@@ -2876,8 +2875,7 @@ max77819_charger_init_batt_psy(struct max77819_charger *me)
 	return rc;
 }
 
-static int __devinit
-max77819_charger_init_ac_psy(struct max77819_charger *me)
+static int max77819_charger_init_ac_psy(struct max77819_charger *me)
 {
 	int rc = 0;
 	struct device *dev = me->dev;
@@ -3246,7 +3244,7 @@ static struct of_device_id max77819_charger_of_ids[] = {
 MODULE_DEVICE_TABLE(of, max77819_charger_of_ids);
 #endif /* CONFIG_OF */
 
-static __devinit int max77819_charger_probe(struct platform_device *pdev)
+static int max77819_charger_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct max77819_dev *chip = dev_get_drvdata(dev->parent);
@@ -3498,7 +3496,7 @@ abort:
 	return rc;
 }
 
-static __devexit int max77819_charger_remove(struct platform_device *pdev)
+static int max77819_charger_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct max77819_charger *me = dev_get_drvdata(dev);
@@ -3550,7 +3548,7 @@ static struct platform_driver max77819_charger_driver = {
 	.driver.of_match_table  = max77819_charger_of_ids,
 #endif /* CONFIG_OF */
 	.probe                  = max77819_charger_probe,
-	.remove                 = __devexit_p(max77819_charger_remove),
+	.remove                 = max77819_charger_remove,
 };
 
 #ifdef CONFIG_LGE_PM

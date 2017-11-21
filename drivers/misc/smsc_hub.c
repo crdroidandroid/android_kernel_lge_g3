@@ -527,7 +527,7 @@ struct smsc_hub_platform_data *msm_hub_dt_to_pdata(
 	return pdata;
 }
 
-static int __devinit smsc_hub_probe(struct platform_device *pdev)
+static int smsc_hub_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	struct smsc_hub_platform_data *pdata;

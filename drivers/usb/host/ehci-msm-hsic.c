@@ -1933,7 +1933,7 @@ struct msm_hsic_host_platform_data *msm_hsic_dt_to_pdata(
 }
 
 
-static int __devinit ehci_hsic_msm_probe(struct platform_device *pdev)
+static int ehci_hsic_msm_probe(struct platform_device *pdev)
 {
 	struct usb_hcd *hcd;
 	struct resource *res;
@@ -2195,7 +2195,7 @@ put_hcd:
 	return ret;
 }
 
-static int __devexit ehci_hsic_msm_remove(struct platform_device *pdev)
+static int ehci_hsic_msm_remove(struct platform_device *pdev)
 {
 	struct usb_hcd *hcd = platform_get_drvdata(pdev);
 	struct msm_hsic_hcd *mehci = hcd_to_hsic(hcd);
@@ -2387,7 +2387,7 @@ static const struct of_device_id hsic_host_dt_match[] = {
 };
 static struct platform_driver ehci_msm_hsic_driver = {
 	.probe	= ehci_hsic_msm_probe,
-	.remove	= __devexit_p(ehci_hsic_msm_remove),
+	.remove	= ehci_hsic_msm_remove,
 	.driver = {
 		.name = "msm_hsic_host",
 #ifdef CONFIG_PM

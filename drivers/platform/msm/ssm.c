@@ -270,7 +270,7 @@ static struct ssm_platform_data *populate_ssm_pdata(struct device *dev)
 	return pdata;
 }
 
-static int __devinit ssm_probe(struct platform_device *pdev)
+static int ssm_probe(struct platform_device *pdev)
 {
 	int rc;
 	struct ssm_platform_data *pdata;
@@ -333,7 +333,7 @@ exit:
 
 }
 
-static int __devexit ssm_remove(struct platform_device *pdev)
+static int ssm_remove(struct platform_device *pdev)
 {
 
 	if (!ssm_drv)
@@ -364,7 +364,7 @@ static struct of_device_id ssm_match_table[] = {
 
 static struct platform_driver ssm_pdriver = {
 	.probe          = ssm_probe,
-	.remove         = __devexit_p(ssm_remove),
+	.remove         = ssm_remove,
 	.driver = {
 		.name   = SSM_DEV_NAME,
 		.owner  = THIS_MODULE,

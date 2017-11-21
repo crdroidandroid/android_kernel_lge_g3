@@ -1175,8 +1175,7 @@ fail:
 	return rc;
 }
 
-static int __devinit
-wcnss_wlan_ctrl_probe(struct platform_device *pdev)
+static int wcnss_wlan_ctrl_probe(struct platform_device *pdev)
 {
 	if (!penv || !penv->triggered)
 		return -ENODEV;
@@ -1198,8 +1197,7 @@ void wcnss_flush_delayed_boot_votes()
 }
 EXPORT_SYMBOL(wcnss_flush_delayed_boot_votes);
 
-static int __devexit
-wcnss_wlan_ctrl_remove(struct platform_device *pdev)
+static int wcnss_wlan_ctrl_remove(struct platform_device *pdev)
 {
 	if (penv)
 		penv->smd_channel_ready = 0;
@@ -1216,11 +1214,10 @@ static struct platform_driver wcnss_wlan_ctrl_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe	= wcnss_wlan_ctrl_probe,
-	.remove	= __devexit_p(wcnss_wlan_ctrl_remove),
+	.remove	= wcnss_wlan_ctrl_remove,
 };
 
-static int __devexit
-wcnss_ctrl_remove(struct platform_device *pdev)
+static int wcnss_ctrl_remove(struct platform_device *pdev)
 {
 	if (penv && penv->smd_ch)
 		smd_close(penv->smd_ch);
@@ -1228,8 +1225,7 @@ wcnss_ctrl_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devinit
-wcnss_ctrl_probe(struct platform_device *pdev)
+static int wcnss_ctrl_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 
@@ -1255,7 +1251,7 @@ static struct platform_driver wcnss_ctrl_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe	= wcnss_ctrl_probe,
-	.remove	= __devexit_p(wcnss_ctrl_remove),
+	.remove	= wcnss_ctrl_remove,
 };
 
 void wcnss_get_monotonic_boottime(struct timespec *ts)
@@ -2860,8 +2856,7 @@ static struct miscdevice wcnss_misc = {
 	.fops = &wcnss_node_fops,
 };
 
-static int __devinit
-wcnss_wlan_probe(struct platform_device *pdev)
+static int wcnss_wlan_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 
@@ -2915,8 +2910,7 @@ wcnss_wlan_probe(struct platform_device *pdev)
 
 }
 
-static int __devexit
-wcnss_wlan_remove(struct platform_device *pdev)
+static int wcnss_wlan_remove(struct platform_device *pdev)
 {
 	if (penv->wcnss_notif_hdle)
 		subsys_notif_unregister_notifier(penv->wcnss_notif_hdle, &wnb);
@@ -2948,7 +2942,7 @@ static struct platform_driver wcnss_wlan_driver = {
 #endif
 	},
 	.probe	= wcnss_wlan_probe,
-	.remove	= __devexit_p(wcnss_wlan_remove),
+	.remove	= wcnss_wlan_remove,
 };
 
 static int __init wcnss_wlan_init(void)

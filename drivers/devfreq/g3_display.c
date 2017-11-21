@@ -57,7 +57,7 @@ const struct dev_pm_ops g3_display_dev_pm_ops = {
 
 struct platform_driver g3_display_driver = {
 	.probe = g3_display_probe,
-	.remove = __devexit_p(g3_display_remove),
+	.remove = g3_display_remove,
 	.id_table = display_ids,
 	.driver = {
 		.name = "g3-display",
@@ -172,7 +172,7 @@ err_alloc_mem:
 	return ret;
 }
 
-int __devexit g3_display_remove(struct platform_device *pdev){
+int g3_display_remove(struct platform_device *pdev){
 	struct g3_display_data *data = pdev->dev.platform_data;
 
 	unregister_pm_notifier(&data->nb_pm);

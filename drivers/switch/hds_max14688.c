@@ -1485,7 +1485,7 @@ static void max14688_parse_dt(struct device *dev, struct max14688_platform_data 
     input_vadc = qpnp_get_vadc(dev, "switch");
 }
 
-static __devinit int max14688_probe (struct i2c_client *client,
+static int max14688_probe (struct i2c_client *client,
     const struct i2c_device_id *id)
 {
     struct max14688_platform_data *pdata = client->dev.platform_data;
@@ -1708,7 +1708,7 @@ abort:
     return rc;
 }
 
-static __devexit int max14688_remove (struct i2c_client *client)
+static int max14688_remove (struct i2c_client *client)
 {
     struct max14688 *me = i2c_get_clientdata(client);
 
@@ -1726,7 +1726,7 @@ static struct i2c_driver max14688_i2c_driver = {
     .driver.of_match_table = of_match_ptr(max14688_device_ids),
 #endif /* CONFIG_OF */
     .probe                 = max14688_probe,
-    .remove                = __devexit_p(max14688_remove),
+    .remove                = max14688_remove,
     .id_table              = max14688_i2c_ids,
 };
 

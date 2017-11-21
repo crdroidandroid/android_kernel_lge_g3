@@ -974,7 +974,7 @@ int msm_tsens_early_init(struct tsens_platform_data *pdata)
 	return rc;
 }
 
-static int __devinit tsens_tm_probe(struct platform_device *pdev)
+static int tsens_tm_probe(struct platform_device *pdev)
 {
 	int rc, i;
 
@@ -1020,7 +1020,7 @@ fail:
 	return rc;
 }
 
-static int __devexit tsens_tm_remove(struct platform_device *pdev)
+static int tsens_tm_remove(struct platform_device *pdev)
 {
 	int i;
 

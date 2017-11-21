@@ -1752,7 +1752,7 @@ int msm_serial_set_uart_console(int enable)
 }
 #endif
 
-static int __devinit msm_serial_hsl_probe(struct platform_device *pdev)
+static int msm_serial_hsl_probe(struct platform_device *pdev)
 {
 	struct msm_hsl_port *msm_hsl_port;
 	struct resource *uart_resource;
@@ -1921,7 +1921,7 @@ err:
 	return ret;
 }
 
-static int __devexit msm_serial_hsl_remove(struct platform_device *pdev)
+static int msm_serial_hsl_remove(struct platform_device *pdev)
 {
 	struct msm_hsl_port *msm_hsl_port = platform_get_drvdata(pdev);
 	const struct msm_serial_hslite_platform_data *pdata =
@@ -2042,7 +2042,7 @@ static struct dev_pm_ops msm_hsl_dev_pm_ops = {
 
 static struct platform_driver msm_hsl_platform_driver = {
 	.probe = msm_serial_hsl_probe,
-	.remove = __devexit_p(msm_serial_hsl_remove),
+	.remove = msm_serial_hsl_remove,
 	.driver = {
 		.name = "msm_serial_hsl",
 		.owner = THIS_MODULE,

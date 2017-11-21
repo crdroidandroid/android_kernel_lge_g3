@@ -78,7 +78,7 @@ bool msm_jtag_fuse_apps_access_disabled(void)
 }
 EXPORT_SYMBOL(msm_jtag_fuse_apps_access_disabled);
 
-static int __devinit jtag_fuse_probe(struct platform_device *pdev)
+static int jtag_fuse_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct fuse_drvdata *drvdata;
@@ -104,7 +104,7 @@ static int __devinit jtag_fuse_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit jtag_fuse_remove(struct platform_device *pdev)
+static int jtag_fuse_remove(struct platform_device *pdev)
 {
 	return 0;
 }
@@ -116,7 +116,7 @@ static struct of_device_id jtag_fuse_match[] = {
 
 static struct platform_driver jtag_fuse_driver = {
 	.probe          = jtag_fuse_probe,
-	.remove         = __devexit_p(jtag_fuse_remove),
+	.remove         = jtag_fuse_remove,
 	.driver         = {
 		.name   = "msm-jtag-fuse",
 		.owner	= THIS_MODULE,

@@ -3034,7 +3034,7 @@ static void sdhci_set_default_hw_caps(struct sdhci_msm_host *msm_host,
 	}
 }
 
-static int __devinit sdhci_msm_probe(struct platform_device *pdev)
+static int sdhci_msm_probe(struct platform_device *pdev)
 {
 	struct sdhci_host *host;
 	struct sdhci_pltfm_host *pltfm_host;
@@ -3467,7 +3467,7 @@ out:
 	return ret;
 }
 
-static int __devexit sdhci_msm_remove(struct platform_device *pdev)
+static int sdhci_msm_remove(struct platform_device *pdev)
 {
 	struct sdhci_host *host = platform_get_drvdata(pdev);
 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
@@ -3699,7 +3699,7 @@ MODULE_DEVICE_TABLE(of, sdhci_msm_dt_match);
 
 static struct platform_driver sdhci_msm_driver = {
 	.probe		= sdhci_msm_probe,
-	.remove		= __devexit_p(sdhci_msm_remove),
+	.remove		= sdhci_msm_remove,
 	.driver		= {
 		.name	= "sdhci_msm",
 		.owner	= THIS_MODULE,

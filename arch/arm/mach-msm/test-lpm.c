@@ -597,7 +597,7 @@ static const struct file_operations fops_comm = {
 	.write = lpm_test_comm_write,
 };
 
-static int __devinit lpm_test_init(int test_lpm_level_count,
+static int lpm_test_init(int test_lpm_level_count,
 		struct msm_rpmrs_level *test_levels)
 {
 	int filevalue;
@@ -639,7 +639,7 @@ init_err:
 	return ret;
 }
 
-static int  __devexit lpm_test_exit(struct platform_device *pdev)
+static int lpm_test_exit(struct platform_device *pdev)
 {
 	unsigned int m_cpu = 0;
 
@@ -651,7 +651,7 @@ static int  __devexit lpm_test_exit(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devinit lpm_test_probe(struct platform_device *pdev)
+static int lpm_test_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct lpm_test_platform_data *pdata;

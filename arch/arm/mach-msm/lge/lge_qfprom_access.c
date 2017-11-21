@@ -712,7 +712,7 @@ u32 qfprom_version_check(u32 check_type)
   return ret;
 }
 
-static int __devexit lge_qfprom_interface_remove(struct platform_device *pdev)
+static int lge_qfprom_interface_remove(struct platform_device *pdev)
 {
 	return 0;
 }
@@ -737,7 +737,7 @@ static int __init lge_qfprom_probe(struct platform_device *pdev)
 
 static struct platform_driver lge_qfprom_driver __refdata = {
 	.probe  = lge_qfprom_probe,
-	.remove = __devexit_p(lge_qfprom_interface_remove),
+	.remove = lge_qfprom_interface_remove,
 	.driver = {
 		.name = LGE_QFPROM_INTERFACE_NAME,
 		.owner = THIS_MODULE,

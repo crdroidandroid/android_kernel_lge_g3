@@ -709,7 +709,7 @@ static void mdss_edp_edid2pinfo(struct mdss_edp_drv_pdata *edp_drv)
 	pinfo->lcdc.hsync_skew = 0;
 }
 
-static int __devexit mdss_edp_remove(struct platform_device *pdev)
+static int mdss_edp_remove(struct platform_device *pdev)
 {
 	struct mdss_edp_drv_pdata *edp_drv = NULL;
 
@@ -1040,7 +1040,7 @@ static void mdss_edp_event_setup(struct mdss_edp_drv_pdata *ep)
 	kthread_run(edp_event_thread, (void *)ep, "mdss_edp_hpd");
 }
 
-static int __devinit mdss_edp_probe(struct platform_device *pdev)
+static int mdss_edp_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct mdss_edp_drv_pdata *edp_drv;
@@ -1176,7 +1176,7 @@ MODULE_DEVICE_TABLE(of, msm_mdss_edp_dt_match);
 
 static struct platform_driver mdss_edp_driver = {
 	.probe = mdss_edp_probe,
-	.remove = __devexit_p(mdss_edp_remove),
+	.remove = mdss_edp_remove,
 	.shutdown = NULL,
 	.driver = {
 		.name = "mdss_edp",

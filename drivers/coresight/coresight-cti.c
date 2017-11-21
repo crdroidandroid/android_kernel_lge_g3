@@ -534,7 +534,7 @@ static const struct attribute_group *cti_attr_grps[] = {
 	NULL,
 };
 
-static int __devinit cti_probe(struct platform_device *pdev)
+static int cti_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct device *dev = &pdev->dev;
@@ -600,7 +600,7 @@ static int __devinit cti_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit cti_remove(struct platform_device *pdev)
+static int cti_remove(struct platform_device *pdev)
 {
 	struct cti_drvdata *drvdata = platform_get_drvdata(pdev);
 
@@ -615,7 +615,7 @@ static struct of_device_id cti_match[] = {
 
 static struct platform_driver cti_driver = {
 	.probe          = cti_probe,
-	.remove         = __devexit_p(cti_remove),
+	.remove         = cti_remove,
 	.driver         = {
 		.name   = "coresight-cti",
 		.owner	= THIS_MODULE,

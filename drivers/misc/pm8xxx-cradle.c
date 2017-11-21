@@ -270,7 +270,7 @@ static void bu52014hfv_parse_dt(struct device *dev,
 	pdata->irq_flags = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING;
 }
 
-static int __devinit pm8xxx_cradle_probe(struct platform_device *pdev)
+static int pm8xxx_cradle_probe(struct platform_device *pdev)
 {
 	int ret;
 	unsigned int hall_camera_gpio_irq = 0, hall_pouch_gpio_irq = 0;
@@ -398,7 +398,7 @@ err_switch_dev_register:
 	return ret;
 }
 
-static int __devexit pm8xxx_cradle_remove(struct platform_device *pdev)
+static int pm8xxx_cradle_remove(struct platform_device *pdev)
 {
 	struct pm8xxx_cradle *cradle = platform_get_drvdata(pdev);
 	cancel_delayed_work_sync(&cradle->pouch_work);
@@ -434,7 +434,7 @@ static struct of_device_id bu52031nvx_match_table[] = {
 
 static struct platform_driver pm8xxx_cradle_driver = {
 	.probe		= pm8xxx_cradle_probe,
-	.remove		= __devexit_p(pm8xxx_cradle_remove),
+	.remove		= pm8xxx_cradle_remove,
 	.driver		= {
 	        .name    = HALL_IC_DEV_NAME,
 		.owner	= THIS_MODULE,

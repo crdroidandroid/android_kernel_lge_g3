@@ -1978,7 +1978,7 @@ static int cpp_register_domain(void)
 }
 
 
-static int __devinit cpp_probe(struct platform_device *pdev)
+static int cpp_probe(struct platform_device *pdev)
 {
 	struct cpp_device *cpp_dev;
 	int rc = 0;

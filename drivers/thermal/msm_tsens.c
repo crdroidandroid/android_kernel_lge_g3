@@ -535,7 +535,7 @@ static const struct dev_pm_ops tsens_pm_ops = {
 };
 #endif
 
-static int __devinit tsens_tm_probe(struct platform_device *pdev)
+static int tsens_tm_probe(struct platform_device *pdev)
 {
 	unsigned int reg, i, calib_data, calib_data_backup;
 	int rc;
@@ -617,7 +617,7 @@ static int __devinit tsens_tm_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit tsens_tm_remove(struct platform_device *pdev)
+static int tsens_tm_remove(struct platform_device *pdev)
 {
 	struct tsens_tm_device *tmdev = platform_get_drvdata(pdev);
 	unsigned int reg, i;
@@ -636,7 +636,7 @@ static int __devexit tsens_tm_remove(struct platform_device *pdev)
 
 static struct platform_driver tsens_tm_driver = {
 	.probe	= tsens_tm_probe,
-	.remove	= __devexit_p(tsens_tm_remove),
+	.remove	= tsens_tm_remove,
 	.driver	= {
 		.name = "tsens-tm",
 		.owner = THIS_MODULE,

@@ -563,7 +563,7 @@ struct snd_soc_platform_driver msm_mvs_soc_platform = {
 };
 EXPORT_SYMBOL(msm_mvs_soc_platform);
 
-static __devinit int msm_pcm_probe(struct platform_device *pdev)
+static int msm_pcm_probe(struct platform_device *pdev)
 {
 	dev_info(&pdev->dev, "%s: dev name %s\n", __func__, dev_name(&pdev->dev));
 	return snd_soc_register_platform(&pdev->dev,
@@ -582,7 +582,7 @@ static struct platform_driver msm_pcm_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = msm_pcm_probe,
-	.remove = __devexit_p(msm_pcm_remove),
+	.remove = msm_pcm_remove,
 };
 
 static int __init msm_mvs_soc_platform_init(void)

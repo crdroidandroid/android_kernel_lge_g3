@@ -3811,7 +3811,7 @@ static void async_touch_init(void *data, async_cookie_t cookie)
 }
 
 
-static int __devinit touch_init(void)
+static int touch_init(void)
 {
 	TOUCH_TRACE();
 	async_schedule(async_touch_init, NULL);

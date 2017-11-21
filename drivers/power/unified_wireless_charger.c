@@ -701,7 +701,7 @@ int wireless_charging_completed()
 
 EXPORT_SYMBOL(wireless_charging_completed);
 #endif
-static int __devinit unified_wlc_hw_init(struct unified_wlc_chip *chip)
+static int unified_wlc_hw_init(struct unified_wlc_chip *chip)
 {
 	int ret;
 	pr_err("[WLC] %s \n", __func__);
@@ -808,7 +808,7 @@ static void unified_parse_dt(struct device *dev,
 
 }
 
-static int __devinit unified_wlc_probe(struct platform_device *pdev)
+static int unified_wlc_probe(struct platform_device *pdev)
 {
 	int rc = 0;
 
@@ -942,7 +942,7 @@ free_chip:
 	return rc;
 }
 
-static int __devexit unified_wlc_remove(struct platform_device *pdev)
+static int unified_wlc_remove(struct platform_device *pdev)
 {
 	struct unified_wlc_chip *chip = platform_get_drvdata(pdev);
 
@@ -966,7 +966,7 @@ static const struct dev_pm_ops unified_pm_ops = {
 
 static struct platform_driver unified_wlc_driver = {
 	.probe = unified_wlc_probe,
-	.remove = __devexit_p(unified_wlc_remove),
+	.remove = unified_wlc_remove,
 	.id_table = unified_id,
 	.driver = {
 		.name = UNIFIED_WLC_DEV_NAME,

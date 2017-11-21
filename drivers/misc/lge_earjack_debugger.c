@@ -90,7 +90,7 @@ static void earjack_debugger_parse_dt(struct device *dev,
 	pdata->gpio_trigger = of_get_named_gpio_flags(np, "serial,irq-gpio", 0, NULL);
 }
 
-static int __devinit earjack_debugger_probe(struct platform_device *pdev)
+static int earjack_debugger_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	struct earjack_debugger_device *adev;
@@ -160,7 +160,7 @@ err_gpio_request:
 	return ret;
 }
 
-static int __devexit earjack_debugger_remove(struct platform_device *pdev)
+static int earjack_debugger_remove(struct platform_device *pdev)
 {
 	struct earjack_debugger_device *adev = platform_get_drvdata(pdev);
 
@@ -212,7 +212,7 @@ static struct of_device_id earjack_debugger_match_table[] = {
 
 static struct platform_driver earjack_debugger_driver = {
 	.probe = earjack_debugger_probe,
-	.remove = __devexit_p(earjack_debugger_remove),
+	.remove = earjack_debugger_remove,
 	.shutdown = earjack_debugger_shutdown,
 	.driver = {
 		.name = "earjack-debugger",

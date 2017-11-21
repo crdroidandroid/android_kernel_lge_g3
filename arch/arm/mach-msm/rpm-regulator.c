@@ -1605,8 +1605,7 @@ static struct vreg *rpm_vreg_get_vreg(int id)
 	return vreg;
 }
 
-static int __devinit
-rpm_vreg_init_regulator(const struct rpm_regulator_init_data *pdata,
+static int rpm_vreg_init_regulator(const struct rpm_regulator_init_data *pdata,
 			struct device *dev)
 {
 	struct regulator_desc *rdesc = NULL;
@@ -1752,7 +1751,7 @@ static void rpm_vreg_set_point_init(void)
 	}
 }
 
-static int __devinit rpm_vreg_probe(struct platform_device *pdev)
+static int rpm_vreg_probe(struct platform_device *pdev)
 {
 	struct rpm_regulator_platform_data *platform_data;
 	static struct rpm_regulator_consumer_mapping *prev_consumer_map;
@@ -1873,7 +1872,7 @@ remove_regulators:
 	return rc;
 }
 
-static int __devexit rpm_vreg_remove(struct platform_device *pdev)
+static int rpm_vreg_remove(struct platform_device *pdev)
 {
 	struct rpm_regulator_platform_data *platform_data;
 	int i, id;
@@ -1900,7 +1899,7 @@ static int __devexit rpm_vreg_remove(struct platform_device *pdev)
 
 static struct platform_driver rpm_vreg_driver = {
 	.probe = rpm_vreg_probe,
-	.remove = __devexit_p(rpm_vreg_remove),
+	.remove = rpm_vreg_remove,
 	.driver = {
 		.name = RPM_REGULATOR_DEV_NAME,
 		.owner = THIS_MODULE,
