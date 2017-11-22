@@ -624,7 +624,7 @@ static int msm_limiter_init(void)
 
 	/* One-time init of required values. */
 	for_each_possible_cpu(cpu) {		
-#if defined(CONFIG_ARCH_MSM8916) || defined(CONFIG_ARCH_APQ8084)
+#if defined(CONFIG_ARCH_MSM8916) || defined(CONFIG_ARCH_APQ8084) || defined (CONFIG_ARCH_MSM8974)
 		per_cpu(limit, cpu).suspend_max_freq = DEFAULT_SUSP_MAX_FREQUENCY;
 		per_cpu(limit, cpu).resume_max_freq = DEFAULT_RESUME_MAX_FREQUENCY;
 		per_cpu(limit, cpu).suspend_min_freq = DEFAULT_MIN_FREQUENCY;
