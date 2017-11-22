@@ -1260,10 +1260,10 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
 #endif
 
-	if (cpufreq_driver->target)
+	if (cpufreq_driver->target) {
 		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
 		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
-
+		}
 	kobj = &data->kobj;
 	cmp = &data->kobj_unregister;
 	unlock_policy_rwsem_write(cpu);
