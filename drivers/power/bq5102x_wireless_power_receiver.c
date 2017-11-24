@@ -448,7 +448,7 @@ static int bq5102x_parse_dt(struct device_node *dev_node)
 
 	return ret;
 }
-static int __devinit bq5102x_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int bq5102x_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct device_node *dev_node = client->dev.of_node;
 	int ret;
