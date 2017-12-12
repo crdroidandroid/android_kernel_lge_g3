@@ -1614,7 +1614,7 @@
  		clock-name = "l2_clk";
 		polling-ms = <110>;
  		governor = "cpufreq";
- 		freq-tbl-khz =
+		freq-tbl-khz =
 			<  268800 >,
 			<  300000 >,
 			<  345600 >,
@@ -1639,53 +1639,10 @@
 
  	};
  
-	memlat: qcom,memlat-cpu {
-		compatible = "qcom,devbw";
-		governor = "powersave";
-		qcom,src-dst-ports = <1 512>, <2 512>;
-		qcom,active-only;
-		qcom,bw-tbl =
-			<  381 /*  50 MHz */  >,
-			<  572 /*  75 MHz */  >,
-			<  762 /* 100 MHz */  >,
-			< 1144 /* 150 MHz */  >,
-			< 1525 /* 200 MHz */  >,
-			< 2342 /* 307 MHz */  >,
-			< 3509 /* 460 MHz */  >,
-			< 4684 /* 614 MHz */  >,
-			< 6103 /* 800 MHz */  >,
-			< 7102 /* 931 MHz */  >,
-			< 7674 /* 1006 MHz */ >;
-	};
-
-	memlat_cpu: qcom,arm-memlat-mon {
-		compatible = "qcom,arm-memlat-mon";
-		qcom,cpulist =	<&CPU0>;
-		qcom,target-dev = <&memlat>;
-	};
-
 	cpubw: qcom,cpubw {
 		compatible = "qcom,cpubw";
+		governor = "cpufreq";
 		qcom,cpu-mem-ports = <1 512>, <2 512>;
-		qcom,bw-tbl =
-			<  381 /*  50 MHz */  >,
-			<  572 /*  75 MHz */  >,
-			<  762 /* 100 MHz */  >,
-			< 1144 /* 150 MHz */  >,
-			< 1525 /* 200 MHz */  >,
-			< 2342 /* 307 MHz */  >,
-			< 3509 /* 460 MHz */  >,
-			< 4684 /* 614 MHz */  >,
-			< 6103 /* 800 MHz */  >,
-			< 7102 /* 931 MHz */  >,
-			< 7674 /* 1006 MHz */ >;
-	};
-
-	mincpubw: qcom,mincpubw {
-		compatible = "qcom,devbw";
-		governor = "powersave";
-		qcom,src-dst-ports = <1 512>, <2 512>;
-		qcom,active-only;
 		qcom,bw-tbl =
 			<  381 /*  50 MHz */  >,
 			<  572 /*  75 MHz */  >,
@@ -1730,11 +1687,12 @@
 			< 2572800 7674 >,
 			< 2726400 7674 >,
 			< 2880000 7674 >;
+
  		};
 
  		cache-cpufreq {
  			target-dev = <&cache>;
- 			cpu-to-dev-map =
+  			cpu-to-dev-map =
  				<  268800  268800 >,
  				<  300000  300000 >,
  				<  422400  422400 >,
@@ -1751,12 +1709,6 @@
 
  		};
 
-		mincpubw-cpufreq {
-			target-dev = <&mincpubw>;
-			cpu-to-dev-map =
-				< 960000  1525 >,
-				< 1497600 3509 >;
-		};
  	};
  
 	qcom,msm-cpufreq@0 {

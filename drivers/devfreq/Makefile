@@ -10,8 +10,7 @@ obj-$(CONFIG_DEVFREQ_GOV_MSM_BW_HWMON)		+= governor_bw_hwmon.o
 obj-$(CONFIG_SIMPLE_GPU_ALGORITHM)		+= simple_gpu_algorithm.o
 obj-$(CONFIG_DEVFREQ_GOV_MSM_CACHE_HWMON)	+= governor_cache_hwmon.o
 obj-$(CONFIG_ARCH_MSM_KRAIT)			+= krait-l2pm.o
-obj-$(CONFIG_DEVFREQ_GOV_MEMLAT)		+= governor_memlat.o
-obj-$(CONFIG_ARM_MEMLAT_MON)			+= arm-memlat-mon.o
+obj-$(CONFIG_DEVFREQ_SIMPLE_DEV)		+= devfreq_simple_dev.o
 
 # DEVFREQ Drivers
 obj-$(CONFIG_LGE_DEVFREQ_DFPS)  += g3_display.o
