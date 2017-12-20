@@ -475,28 +475,17 @@ static inline void debug_work_deactivate(struct work_struct *work) { }
 
 /* allocate ID and assign it to @pool */
 static int worker_pool_assign_id(struct worker_pool *pool)
-  {
-	  int ret;
+{
+	int ret;
 
-<<<<<<< HEAD
-	  lockdep_assert_held(&wq_pool_mutex);
-=======
-	lockdep_assert_held(&wq_mutex);
+	mutex_lock(&worker_pool_idr_mutex);
+	ret = idr_alloc(&worker_pool_idr, pool, 0, 0, GFP_KERNEL);
+	if (ret >= 0)
+		pool->id = ret;
+	mutex_unlock(&worker_pool_idr_mutex);
 
-	do {
-		if (!idr_pre_get(&worker_pool_idr, GFP_KERNEL))
-			return -ENOMEM;
-		ret = idr_get_new(&worker_pool_idr, pool, &pool->id);
-	} while (ret == -EAGAIN);
->>>>>>> 5bcab33... workqueue: separate out pool and workqueue locking into wq_mutex
-
-	  ret = idr_alloc(&worker_pool_idr, pool, 0, 0, GFP_KERNEL);
-	  if (ret >= 0) {
-		  pool->id = ret;
-		  return 0;
-	  }
-	  return ret;
-   }
+	return ret < 0 ? ret : 0;
+}
 
 /**
  * first_pwq - return the first pool_workqueue of the specified workqueue
@@ -4187,8 +4176,7 @@ static void wq_unbind_fn(struct work_struct *work)
 
 		spin_unlock_irq(&pool->lock);
 		mutex_unlock(&pool->manager_mutex);
-	}
-
+	
 		/*
 		 * Call schedule() so that we cross rq->lock and thus can
 		 * guarantee sched callbacks see the %WORKER_UNBOUND flag.
@@ -4208,8 +4196,11 @@ static void wq_unbind_fn(struct work_struct *work)
 	 * unbound chain execution of pending work items if other workers
 	 * didn't already.
 	 */
-	for_each_cpu_worker_pool(pool, cpu)
 		atomic_set(&pool->nr_running, 0);
+		spin_lock_irq(&pool->lock);
+		wake_up_worker(pool);
+		spin_unlock_irq(&pool->lock);
+	}
 }
 
 /*
