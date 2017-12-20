@@ -46,7 +46,7 @@ static DEFINE_SPINLOCK(simple_ida_lock);
 /* the maximum ID which can be allocated given idr->layers */
 static int idr_max(int layers)
 {
-	int bits = min_t(int, layers * IDR_BITS, MAX_ID_SHIFT);
+	int bits = min_t(int, layers * IDR_BITS, MAX_IDR_SHIFT);
 
 	return (1 << bits) - 1;
 }
@@ -498,7 +498,7 @@ static void idr_remove_warning(int id)
 static void sub_remove(struct idr *idp, int shift, int id)
 {
 	struct idr_layer *p = idp->top;
-	struct idr_layer **pa[MAX_LEVEL_IDR + 1];
+	struct idr_layer **pa[MAX_IDR_LEVEL + 1];
 	struct idr_layer ***paa = &pa[0];
 	struct idr_layer *to_free;
 	int n;
