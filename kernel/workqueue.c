@@ -525,19 +525,19 @@ static inline void debug_work_deactivate(struct work_struct *work) { }
 
 /* allocate ID and assign it to @pool */
 static int worker_pool_assign_id(struct worker_pool *pool)
-{
-	int ret;
+  static int worker_pool_assign_id(struct worker_pool *pool)
+  {
+	  int ret;
 
-	lockdep_assert_held(&wq_pool_mutex);
+	  lockdep_assert_held(&wq_pool_mutex);
 
-	do {
-		if (!idr_pre_get(&worker_pool_idr, GFP_KERNEL))
-			return -ENOMEM;
-		ret = idr_get_new(&worker_pool_idr, pool, &pool->id);
-	} while (ret == -EAGAIN);
-
-	return ret;
-}
+	  ret = idr_alloc(&worker_pool_idr, pool, 0, 0, GFP_KERNEL);
+	  if (ret >= 0) {
+		  pool->id = ret;
+		  return 0;
+	  }
+	  return ret;
+   }
 
 /**
  * unbound_pwq_by_node - return the unbound pool_workqueue for the given node
