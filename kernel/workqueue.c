@@ -525,7 +525,6 @@ static inline void debug_work_deactivate(struct work_struct *work) { }
 
 /* allocate ID and assign it to @pool */
 static int worker_pool_assign_id(struct worker_pool *pool)
-  static int worker_pool_assign_id(struct worker_pool *pool)
   {
 	  int ret;
 
