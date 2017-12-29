@@ -2365,11 +2365,11 @@
 	qcom,msm-thermal {
 		compatible = "qcom,msm-thermal";
 		qcom,sensor-id = <5>;
-		qcom,poll-ms = <250>;
-		qcom,limit-temp = <75>;
+		qcom,poll-ms = <300>;
+		qcom,limit-temp = <70>;
 		qcom,temp-hysteresis = <5>;
 		qcom,therm-reset-temp = <115>;
-		qcom,freq-step = <1>;
+		qcom,freq-step = <2>;
 		qcom,freq-control-mask = <0xf>;
 		qcom,core-limit-temp = <80>;
 		qcom,core-temp-hysteresis = <5>;
