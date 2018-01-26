@@ -539,33 +539,27 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 	int ret = 0, id;
 	struct kgsl_device *device = dev_priv->device;
 
-	while (1) {
-		if (idr_pre_get(&device->context_idr, GFP_KERNEL) == 0) {
-			KGSL_DRV_INFO(device, "idr_pre_get: ENOMEM\n");
-			ret = -ENOMEM;
-			break;
-		}
-
-		write_lock(&device->context_lock);
-		ret = idr_get_new_above(&device->context_idr, context, 1, &id);
-		context->id = id;
-		write_unlock(&device->context_lock);
-
-		if (ret != -EAGAIN)
-			break;
-	}
-
-	if (ret)
+	idr_preload(GFP_KERNEL);
+	write_lock(&device->context_lock);
+	/* Allocate the slot but don't put a pointer in it yet */
+	id = idr_alloc(&device->context_idr, NULL, 1, 0, GFP_NOWAIT);
+	write_unlock(&device->context_lock);
+	idr_preload_end();
+	if (id < 0) {
+		ret = id;
 		goto fail;
+	}
 
 	/* MAX - 1, there is one memdesc in memstore for device info */
 	if (id >= KGSL_MEMSTORE_MAX) {
-		KGSL_DRV_INFO(device, "cannot have more than %d "
+		KGSL_DRV_INFO(device, "cannot have more than %zu "
 				"ctxts due to memstore limitation\n",
 				KGSL_MEMSTORE_MAX);
 		ret = -ENOSPC;
 		goto fail_free_id;
 	}
+
+	context->id = id;
 
 	kref_init(&context->refcount);
 	/*
@@ -578,7 +572,6 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 	context->device = dev_priv->device;
 	context->dev_priv = dev_priv;
 	context->proc_priv = dev_priv->process_priv;
-	context->pid = task_tgid_nr(current);
 	context->tid = task_pid_nr(current);
 
 	ret = kgsl_sync_timeline_create(context);
