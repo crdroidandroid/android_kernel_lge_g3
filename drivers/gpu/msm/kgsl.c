@@ -541,8 +541,8 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 
 	idr_preload(GFP_KERNEL);
 	write_lock(&device->context_lock);
-	/* Allocate the slot but don't put a pointer in it yet */
-	id = idr_alloc(&device->context_idr, NULL, 1, 0, GFP_NOWAIT);
+	id = idr_alloc(&device->context_idr, context, 1, 0, GFP_NOWAIT);
+	context->id = id;
 	write_unlock(&device->context_lock);
 	idr_preload_end();
 	if (id < 0) {
@@ -558,8 +558,6 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 		ret = -ENOSPC;
 		goto fail_free_id;
 	}
-
-	context->id = id;
 
 	kref_init(&context->refcount);
 	/*
