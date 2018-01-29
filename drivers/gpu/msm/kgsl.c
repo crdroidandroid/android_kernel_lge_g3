@@ -435,8 +435,7 @@ kgsl_mem_entry_attach_process(struct kgsl_mem_entry *entry,
 		return -EBADF;
 	idr_preload(GFP_KERNEL);
 	spin_lock(&process->mem_lock);
-	/* Allocate the ID but don't attach the pointer just yet */
-	id = idr_alloc(&process->mem_idr, NULL, 1, 0, GFP_NOWAIT);
+	id = idr_alloc(&process->mem_idr, entry, 1, 0, GFP_NOWAIT);
 	spin_unlock(&process->mem_lock);
 	idr_preload_end();
 
@@ -570,6 +569,7 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 	context->device = dev_priv->device;
 	context->dev_priv = dev_priv;
 	context->proc_priv = dev_priv->process_priv;
+	context->pid = task_tgid_nr(current);
 	context->tid = task_pid_nr(current);
 
 	ret = kgsl_sync_timeline_create(context);
