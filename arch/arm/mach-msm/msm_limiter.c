@@ -14,13 +14,12 @@
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
 #include <linux/state_notifier.h>
-
 #include <linux/msm_limiter.h>
 
 /* Try not to change below values. */
 #define MSM_LIMITER			"msm_limiter"
 #define MSM_LIMITER_MAJOR		5
-#define MSM_LIMITER_MINOR		3
+#define MSM_LIMITER_MINOR		4
 
 /* Recommended to set below values from userspace. */
 #define FREQ_CONTROL			1
@@ -34,14 +33,16 @@
  * will reflect new max freq. Changing suspend_min_freq will reflect
  * new min freq. All frequency changes do require freq_control enabled.
  * Changing scaling_governor will reflect new governor.
- * Passing single value to above parameters will apply that value to 
+ * Passing single value to above parameters will apply that value to
  * all the CPUs present. Otherwise, you can pass value in token:value
  * pair to apply value individually.
+ * TODO: Get max-min freq dynamically if SOC is not
+ * defined.
  */
 
 #define DEFAULT_SUSP_MAX_FREQUENCY	1497600
 #define DEFAULT_RESUME_MAX_FREQUENCY	2457600
-#define DEFAULT_MIN_FREQUENCY	268800
+#define DEFAULT_MIN_FREQUENCY		268800
 
 static struct notifier_block notif;
 static unsigned int freq_control = FREQ_CONTROL;
@@ -63,20 +64,33 @@ do { 				\
 		pr_info(msg);	\
 } while (0)
 
-static void update_cpu_max_freq(unsigned int cpu)
+static void update_cpu_max_freq_on_resume(unsigned int cpu)
 {
 	uint32_t max_freq;
 
-	if (state_suspended)
-		max_freq = per_cpu(limit, cpu).suspend_max_freq;
-	else
-		max_freq = per_cpu(limit, cpu).resume_max_freq;
+	max_freq = per_cpu(limit, cpu).resume_max_freq;
 
 	if (!max_freq)
 		return;
 
 	mutex_lock(&per_cpu(limit, cpu).msm_limiter_mutex);
-	dprintk("%s: Setting Max Freq for CPU%u: %u Hz\n",
+	dprintk("%s: Setting resume max frequency for CPU%u: %u Hz\n",
+			MSM_LIMITER, cpu, max_freq);
+	cpufreq_set_freq(max_freq, 0, cpu);
+	mutex_unlock(&per_cpu(limit, cpu).msm_limiter_mutex);
+}
+
+static void update_cpu_max_freq_on_suspend(unsigned int cpu)
+{
+	uint32_t max_freq;
+
+	max_freq = per_cpu(limit, cpu).suspend_max_freq;
+
+	if (!max_freq)
+		return;
+
+	mutex_lock(&per_cpu(limit, cpu).msm_limiter_mutex);
+	dprintk("%s: Setting suspend max frequency for CPU%u: %u Hz\n",
 			MSM_LIMITER, cpu, max_freq);
 	cpufreq_set_freq(max_freq, 0, cpu);
 	mutex_unlock(&per_cpu(limit, cpu).msm_limiter_mutex);
@@ -89,25 +103,34 @@ static void update_cpu_min_freq(unsigned int cpu)
 	if (!min_freq)
 		return;
 
-	if (state_suspended && min_freq	> per_cpu(limit, cpu).suspend_max_freq)
+	if (min_freq > per_cpu(limit, cpu).suspend_max_freq)
 		return;
 
 	mutex_lock(&per_cpu(limit, cpu).msm_limiter_mutex);
-	dprintk("%s: Setting Min Freq for CPU%u: %u Hz\n",
+	dprintk("%s: Setting min frequency for CPU%u: %u Hz\n",
 			MSM_LIMITER, cpu, min_freq);
 	cpufreq_set_freq(0, min_freq, cpu);
 	mutex_unlock(&per_cpu(limit, cpu).msm_limiter_mutex);
 }
 
-static void msm_limiter_run(void)
+static void msm_limiter_run_on_resume(void)
 {
 	int cpu = 0;
 
 	for_each_possible_cpu(cpu) {
-		update_cpu_max_freq(cpu);
+		/* Update only max frequency. */
+		update_cpu_max_freq_on_resume(cpu);
+	}
+}
 
-		if (state_suspended)
-			update_cpu_min_freq(cpu);
+static void msm_limiter_run_on_suspend(void)
+{
+	int cpu = 0;
+
+	for_each_possible_cpu(cpu) {
+		/* Update max and min frequencies. */
+		update_cpu_max_freq_on_suspend(cpu);
+		update_cpu_min_freq(cpu);
 	}
 }
 
@@ -119,8 +142,10 @@ static int state_notifier_callback(struct notifier_block *this,
 
 	switch (event) {
 		case STATE_NOTIFIER_ACTIVE:
+			msm_limiter_run_on_resume();
+			break;
 		case STATE_NOTIFIER_SUSPEND:
-			msm_limiter_run();
+			msm_limiter_run_on_suspend();
 			break;
 		default:
 			break;
@@ -136,7 +161,7 @@ static int msm_limiter_start(void)
 
 	notif.notifier_call = state_notifier_callback;
 	if (state_register_client(&notif)) {
-		pr_err("%s: Failed to register State notifier callback\n",
+		pr_err("%s: Failed to register state notifier callback\n",
 			MSM_LIMITER);
 		goto err_out;
 	}
@@ -145,7 +170,8 @@ static int msm_limiter_start(void)
 		mutex_init(&per_cpu(limit, cpu).msm_limiter_mutex);
 
 	for_each_possible_cpu(cpu) {
-		update_cpu_max_freq(cpu);
+		/* Start msm_limiter as on resume. */
+		update_cpu_max_freq_on_resume(cpu);
 		update_cpu_min_freq(cpu);
 	}
 
@@ -159,7 +185,7 @@ static void msm_limiter_stop(void)
 {
 	unsigned int cpu = 0;
 
-	for_each_possible_cpu(cpu)	
+	for_each_possible_cpu(cpu)
 		mutex_destroy(&per_cpu(limit, cpu).msm_limiter_mutex);
 
 	state_unregister_client(&notif);
@@ -265,7 +291,7 @@ static ssize_t set_resume_max_freq(struct kobject *kobj,
 			per_cpu(limit, i).resume_max_freq =
 				max(val, per_cpu(limit, i).suspend_min_freq);
 			if (freq_control)
-				update_cpu_max_freq(i);
+				update_cpu_max_freq_on_resume(i);
 		}
 
 		return count;
@@ -286,7 +312,7 @@ static ssize_t set_resume_max_freq(struct kobject *kobj,
 			max(val, per_cpu(limit, cpu).suspend_min_freq);
 
 		if (freq_control)
-			update_cpu_max_freq(cpu);
+			update_cpu_max_freq_on_resume(cpu);
 
 		cp = strchr(cp, ' ');
 		cp++;
@@ -552,6 +578,23 @@ static struct kobj_attribute live_cur_freq =
 	__ATTR(live_cur_freq, 0444,
 		get_live_cur_freq, NULL);
 
+static ssize_t get_cur_load(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int cnt = 0, cpu;
+
+	for_each_possible_cpu(cpu)
+		cnt += snprintf(buf + cnt, PAGE_SIZE - cnt,
+				"%d:%u ", cpu, cpufreq_quick_get_util(cpu));
+
+	cnt += snprintf(buf + cnt, PAGE_SIZE - cnt, "\n");
+	return cnt;
+}
+
+static struct kobj_attribute cur_load =
+	__ATTR(cur_load, 0444,
+		get_cur_load, NULL);
+
 static ssize_t msm_limiter_version_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -591,6 +634,7 @@ static struct attribute *msm_limiter_attrs[] =
 		&live_max_freq.attr,
 		&live_min_freq.attr,
 		&live_cur_freq.attr,
+		&cur_load.attr,
 		&msm_limiter_version.attr,
 		NULL,
 	};
@@ -623,8 +667,8 @@ static int msm_limiter_init(void)
 	}
 
 	/* One-time init of required values. */
-	for_each_possible_cpu(cpu) {		
-#if defined(CONFIG_ARCH_MSM8916) || defined(CONFIG_ARCH_APQ8084) || defined (CONFIG_ARCH_MSM8974)
+	for_each_possible_cpu(cpu) {
+#if defined(CONFIG_ARCH_MSM8974)
 		per_cpu(limit, cpu).suspend_max_freq = DEFAULT_SUSP_MAX_FREQUENCY;
 		per_cpu(limit, cpu).resume_max_freq = DEFAULT_RESUME_MAX_FREQUENCY;
 		per_cpu(limit, cpu).suspend_min_freq = DEFAULT_MIN_FREQUENCY;
