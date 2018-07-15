@@ -49,5 +49,14 @@ config INTELLI_PLUG
 	default y
 	help
 	  An intelligent cpu hotplug driver for
-	  Low Latency Frequency Transition capable processors.	 
+	  Low Latency Frequency Transition capable processors.
+
+config AIO_HOTPLUG
+	bool "All in One HotPlug"
+	depends on SMP && HOTPLUG_CPU
+	default n
+	help
+	  An All in One HotPlug for Traditional Quad-Core SoCs and 
+	  Hexa/Octa-Core big.LITTLE SoCs.
+
 endmenu
