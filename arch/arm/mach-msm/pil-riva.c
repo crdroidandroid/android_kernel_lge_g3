@@ -411,7 +411,7 @@ static int riva_powerup(const struct subsys_desc *desc)
 	}
 	drv->rst_in_progress = 0;
 	enable_irq(drv->irq);
-	queue_delayed_work(system_power_efficient_wq,&drv->cancel_work, msecs_to_jiffies(5000));
+	schedule_delayed_work(&drv->cancel_work, msecs_to_jiffies(5000));
 
 	return ret;
 }

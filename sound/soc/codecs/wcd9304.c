@@ -2270,7 +2270,7 @@ static int sitar_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 		if (tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq !=
 				CF_MIN_3DB_150HZ) {
-			queue_delayed_work(system_power_efficient_wq,&tx_hpf_work[decimator - 1].dwork,
+			schedule_delayed_work(&tx_hpf_work[decimator - 1].dwork,
 				msecs_to_jiffies(300));
 		}
 
@@ -5122,7 +5122,7 @@ int sitar_hs_detect(struct snd_soc_codec *codec,
 	if (!sitar->mbhc_cfg.read_fw_bin) {
 		rc = sitar_mbhc_init_and_calibrate(codec);
 	} else {
-		queue_delayed_work(system_power_efficient_wq,&sitar->mbhc_firmware_dwork,
+		schedule_delayed_work(&sitar->mbhc_firmware_dwork,
 					usecs_to_jiffies(MBHC_FW_READ_TIMEOUT));
 	}
 
@@ -5292,7 +5292,7 @@ static irqreturn_t sitar_dce_handler(int irq, void *data)
 		mask = sitar_get_button_mask(btn);
 		priv->buttons_pressed |= mask;
 		wcd9xxx_lock_sleep(core_res);
-		if (queue_delayed_work(system_power_efficient_wq,&priv->mbhc_btn_dwork,
+		if (schedule_delayed_work(&priv->mbhc_btn_dwork,
 					  msecs_to_jiffies(400)) == 0) {
 			WARN(1, "Button pressed twice without release"
 			     "event\n");

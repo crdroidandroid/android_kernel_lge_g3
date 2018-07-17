@@ -400,7 +400,7 @@ static int wcnss_powerup(const struct subsys_desc *subsys)
 	}
 	drv->restart_inprogress = false;
 	enable_irq(drv->subsys_desc.wdog_bite_irq);
-	queue_delayed_work(system_power_efficient_wq,&drv->cancel_vote_work, msecs_to_jiffies(5000));
+	schedule_delayed_work(&drv->cancel_vote_work, msecs_to_jiffies(5000));
 
 	return 0;
 }

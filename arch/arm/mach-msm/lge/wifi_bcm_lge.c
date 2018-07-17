@@ -164,7 +164,7 @@ static void bcm_wifi_req_dma_work(struct work_struct * work)
 				// IDLE -> ACTIVE
 				wifi_dma_state = 3;
 				pm_qos_update_request(&wifi_dma_qos, 7);
-				queue_delayed_work(system_power_efficient_wq,&req_dma_work, msecs_to_jiffies(50));
+				schedule_delayed_work(&req_dma_work, msecs_to_jiffies(50));
 				//printk(KERN_ERR "%s: schedule work : %d : (IDLE -> ACTIVE)\n", __func__, packet_transfer_cnt);
 			}
 			break;
@@ -174,12 +174,12 @@ static void bcm_wifi_req_dma_work(struct work_struct * work)
 				// ACTIVE -> IDLE
 				wifi_dma_state = 2;
 				pm_qos_update_request(&wifi_dma_qos, PM_QOS_DEFAULT_VALUE);
-				queue_delayed_work(system_power_efficient_wq,&req_dma_work, msecs_to_jiffies(1000));
+				schedule_delayed_work(&req_dma_work, msecs_to_jiffies(1000));
 				//printk(KERN_ERR "%s: schedule work : %d : (ACTIVE -> IDLE)\n", __func__, packet_transfer_cnt);
 			}
 			else {
 				// Keep ACTIVE
-				queue_delayed_work(system_power_efficient_wq,&req_dma_work, msecs_to_jiffies(50));
+				schedule_delayed_work(&req_dma_work, msecs_to_jiffies(50));
 				//printk(KERN_ERR "%s: schedule work : %d :  (ACTIVE -> ACTIVE)\n", __func__, packet_transfer_cnt);
 			}
 			break;
@@ -200,7 +200,7 @@ void bcm_wifi_req_dma_qos(int vote)
 	// INIT -> IDLE
 	if ( wifi_dma_state == 1 && vote ) {
 		wifi_dma_state = 2; // IDLE
-		queue_delayed_work(system_power_efficient_wq,&req_dma_work, msecs_to_jiffies(1000));
+		schedule_delayed_work(&req_dma_work, msecs_to_jiffies(1000));
 		//printk(KERN_ERR "%s: schedule work (INIT -> IDLE)\n", __func__);
 	}
 }

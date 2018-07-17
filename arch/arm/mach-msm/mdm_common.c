@@ -410,7 +410,7 @@ static long mdm_modem_ioctl(struct file *filp, unsigned int cmd,
 		 * gpio goes high.
 		 */
 		if (!status && gpio_get_value(mdm_drv->mdm2ap_status_gpio) == 0)
-			queue_delayed_work(system_power_efficient_wq,&mdev->mdm2ap_status_check_work,
+			schedule_delayed_work(&mdev->mdm2ap_status_check_work,
 				msecs_to_jiffies(MDM2AP_STATUS_TIMEOUT_MS));
 		break;
 	case RAM_DUMP_DONE:

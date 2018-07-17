@@ -1981,7 +1981,7 @@ static int __ref set_enabled(const char *val, const struct kernel_param *kp)
 	} else {
 		if (!enabled) {
 			enabled = 1;
-			queue_delayed_work(system_power_efficient_wq,&check_temp_work,
+			schedule_delayed_work(&check_temp_work,
 				msecs_to_jiffies(msm_thermal_info.poll_ms));
 			pr_info("%s: rescheduling...\n", KBUILD_MODNAME);
 		} else

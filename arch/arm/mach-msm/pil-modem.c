@@ -313,7 +313,7 @@ static void modem_fatal_fn(struct work_struct *work)
 		 * delayed-panic-reboot), the modem is either still wedged or
 		 * SMSM didn't come through. Force panic in that case.
 		 */
-		queue_delayed_work(system_power_efficient_wq,&drv->unlock_work, timeout);
+		schedule_delayed_work(&drv->unlock_work, timeout);
 	}
 }
 

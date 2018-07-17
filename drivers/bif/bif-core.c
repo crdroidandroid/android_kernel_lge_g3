@@ -326,7 +326,7 @@ static void bif_enter_irq_mode_work(struct work_struct *work)
 	/* Reschedule the task if the transaction failed. */
 	if (rc) {
 		pr_err("Could not set BIF bus to interrupt mode, rc=%d\n", rc);
-		queue_delayed_work(system_power_efficient_wq,&bdev->enter_irq_mode_work,
+		schedule_delayed_work(&bdev->enter_irq_mode_work,
 					bdev->irq_mode_delay_jiffies);
 	}
 }
@@ -340,7 +340,7 @@ static void bif_schedule_irq_mode_work(struct bif_ctrl_dev *bdev)
 {
 	if (bdev->irq_count > 0 &&
 	    bdev->desc->ops->get_bus_state(bdev) != BIF_BUS_STATE_INTERRUPT)
-		queue_delayed_work(system_power_efficient_wq,&bdev->enter_irq_mode_work,
+		schedule_delayed_work(&bdev->enter_irq_mode_work,
 					bdev->irq_mode_delay_jiffies);
 }
 

@@ -739,7 +739,7 @@ static void tmio_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
 
 	ret = tmio_mmc_start_command(host, mrq->cmd);
 	if (!ret) {
-		queue_delayed_work(system_power_efficient_wq,&host->delayed_reset_work,
+		schedule_delayed_work(&host->delayed_reset_work,
 				      msecs_to_jiffies(2000));
 		return;
 	}

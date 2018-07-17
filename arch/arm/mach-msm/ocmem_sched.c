@@ -1413,7 +1413,7 @@ static int ocmem_schedule_pending(void)
 
 	if (need_sched == true) {
 		cancel_delayed_work(&ocmem_sched_thread);
-		queue_delayed_work(system_power_efficient_wq,&ocmem_sched_thread,
+		schedule_delayed_work(&ocmem_sched_thread,
 					msecs_to_jiffies(SCHED_DELAY));
 		pr_debug("ocmem: Scheduled delayed work\n");
 	}

@@ -180,7 +180,7 @@ static void ipa_tx_switch_to_intr_mode(struct ipa_sys_context *sys)
 
 fail:
 	IPA_STATS_INC_CNT(ipa_ctx->stats.x_intr_repost_tx);
-	queue_delayed_work(system_power_efficient_wq,&sys->switch_to_intr_work, msecs_to_jiffies(1));
+	schedule_delayed_work(&sys->switch_to_intr_work, msecs_to_jiffies(1));
 	return;
 }
 
@@ -806,7 +806,7 @@ static void ipa_rx_switch_to_intr_mode(struct ipa_sys_context *sys)
 
 fail:
 	IPA_STATS_INC_CNT(ipa_ctx->stats.x_intr_repost);
-	queue_delayed_work(system_power_efficient_wq,&sys->switch_to_intr_work, msecs_to_jiffies(1));
+	schedule_delayed_work(&sys->switch_to_intr_work, msecs_to_jiffies(1));
 }
 
 
@@ -1332,7 +1332,7 @@ fail_skb_alloc:
 fail_kmem_cache_alloc:
 	if (rx_len_cached == 0) {
 		IPA_STATS_INC_CNT(ipa_ctx->stats.rx_repl_repost);
-		queue_delayed_work(system_power_efficient_wq,&replenish_rx_work,
+		schedule_delayed_work(&replenish_rx_work,
 				msecs_to_jiffies(100));
 	}
 	ipa_ctx->stats.rx_q_len = sys->len;
