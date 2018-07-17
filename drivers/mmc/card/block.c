@@ -3275,6 +3275,7 @@ static const struct mmc_fixup blk_fixups[] =
 		  MMC_QUIRK_SEC_ERASE_TRIM_BROKEN),
 	MMC_FIXUP(CID_NAME_ANY, CID_MANFID_HYNIX, CID_OEMID_ANY, add_quirk_mmc,
 		  MMC_QUIRK_BROKEN_DATA_TIMEOUT),
+
 	MMC_FIXUP("CGND3R", CID_MANFID_SAMSUNG, CID_OEMID_ANY, add_quirk_mmc,
 		  MMC_QUIRK_SEC_SEARCH_TUNE),
 
@@ -3285,14 +3286,6 @@ static const struct mmc_fixup blk_fixups[] =
 		  MMC_QUIRK_BLK_NEED_DUMMY_READ),
 	MMC_FIXUP("SEM32G", CID_MANFID_SANDISK_SEM, CID_OEMID_ANY, add_quirk_mmc,
 		  MMC_QUIRK_BLK_NEED_DUMMY_READ),
-
-	/* Disable secure erase and trim for 016G96, 032G96 and 032GE4*/
-	MMC_FIXUP("016G96", 0x11, CID_OEMID_ANY, add_quirk_mmc,
-		  MMC_QUIRK_SEC_ERASE_TRIM_BROKEN),
-	MMC_FIXUP("032G96", 0x11, CID_OEMID_ANY, add_quirk_mmc,
-		  MMC_QUIRK_SEC_ERASE_TRIM_BROKEN),
-	MMC_FIXUP("032GE4", 0x11, CID_OEMID_ANY, add_quirk_mmc,
-		  MMC_QUIRK_SEC_ERASE_TRIM_BROKEN),
 
 	END_FIXUP
 };
