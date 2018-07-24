@@ -3170,15 +3170,6 @@ static const struct mmc_fixup blk_fixups[] =
 		  MMC_QUIRK_SEC_ERASE_TRIM_BROKEN),
 	MMC_FIXUP(CID_NAME_ANY, CID_MANFID_HYNIX, CID_OEMID_ANY, add_quirk_mmc,
 		  MMC_QUIRK_BROKEN_DATA_TIMEOUT),
-	MMC_FIXUP("CGND3R", CID_MANFID_SAMSUNG, CID_OEMID_ANY, add_quirk_mmc,
-		  MMC_QUIRK_SEC_SEARCH_TUNE),
-	/*
-	 * Some devices have issues that requires dummy read
-	 */
-	MMC_FIXUP("SEM16G", CID_MANFID_SANDISK_SEM, CID_OEMID_ANY, add_quirk_mmc,
-		  MMC_QUIRK_BLK_NEED_DUMMY_READ),
-	MMC_FIXUP("SEM32G", CID_MANFID_SANDISK_SEM, CID_OEMID_ANY, add_quirk_mmc,
-		  MMC_QUIRK_BLK_NEED_DUMMY_READ),
 
 	/* Disable secure erase and trim for Toshiba's 016G92, 032G96 and 032GE4*/
 	MMC_FIXUP("016G92", CID_MANFID_TOSHIBA, CID_OEMID_ANY, add_quirk_mmc,
