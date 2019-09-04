@@ -401,7 +401,6 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 
 KBUILD_CPPFLAGS := -D__KERNEL__  $(CLANG_FLAGS)
 
-<<<<<<< HEAD
 KBUILD_CFLAGS   := -Wall -DNDEBUG -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-common -fno-strict-aliasing \
 		   -Werror-implicit-function-declaration \
