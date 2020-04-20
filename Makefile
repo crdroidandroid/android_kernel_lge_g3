@@ -406,16 +406,13 @@ KBUILD_CFLAGS   := -Wall -DNDEBUG -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
            -Wno-unused-variable \
-		   -Wno-misleading-indentation \
+		   -Wno-binding-in-condition \
 		   -Wno-int-in-bool-context \
-		   -Wno-discarded-array-qualifiers \
-		   -Wno-bool-compare\
+		   -Wno-ignored-qualifiers \
 		   -Wno-duplicate-decl-specifier\
 		   -Wno-uninitialized \
-		   -Wno-switch-unreachable \
 		   -mcpu=cortex-a15 -mtune=cortex-a15 -mfpu=neon-vfpv4 -marm \
-		   -ffast-math -fsingle-precision-constant \
-		   -fgcse-lm -fgcse-sm -fsched-spec-load -fforce-addr \
+		   -ffast-math -fforce-addr \
 		   -std=gnu89 \
 		   $(ARM_ARCH_OPT) \
    		   $(CLANG_FLAGS)
