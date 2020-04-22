@@ -261,7 +261,7 @@ eHalStatus sme_FTSendUpdateKeyInd(tHalHandle hHal, tCsrRoamSetKey * pFTKeyInfo)
 
     keymaterial->key[ 0 ].keyLength = pFTKeyInfo->keyLength;
 
-    if ( pFTKeyInfo->keyLength && pFTKeyInfo->Key )
+    if ( pFTKeyInfo->keyLength )
     {
         vos_mem_copy(&keymaterial->key[ 0 ].key, pFTKeyInfo->Key, pFTKeyInfo->keyLength);
         if(pFTKeyInfo->keyLength == 16)

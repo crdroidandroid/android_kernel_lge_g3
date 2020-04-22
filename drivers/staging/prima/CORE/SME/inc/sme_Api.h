@@ -3664,9 +3664,6 @@ eHalStatus sme_SetHT2040Mode(tHalHandle hHal,
 
 void sme_disable_dfs_channel(tHalHandle hHal, bool disable_dfs);
 
-/* HDD Callback function */
-typedef void(*pEncryptMsgRSPCb)(void *pUserData, void *infoParam);
-
 eHalStatus sme_Encryptmsgsend (tHalHandle hHal,
                                u8 *pCmd,
                                int length,

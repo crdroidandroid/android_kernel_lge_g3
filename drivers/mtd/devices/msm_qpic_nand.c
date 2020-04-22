@@ -159,6 +159,14 @@
 #define MSM_NAND_VERSION_MINOR_MASK	0x0FFF0000
 #define MSM_NAND_VERSION_MINOR_SHIFT	16
 
+/* The driver supports devices upto 4K page */
+#define MAX_CW_PER_PAGE 8
+/*
+ * Max descriptors needed for erase, read, write operations.
+ * Usually, this is (2 * MAX_CW_PER_PAGE).
+ */
+#define MAX_DESC 16
+
 /* Structure that defines a NAND SPS command element */
 struct msm_nand_sps_cmd {
 	struct sps_command_element ce;
@@ -466,6 +474,7 @@ out:
  * indicates failure. When successful, the Flash ID is stored in parameter
  * read_id.
  */
+#define READID_CMDS 5
 static int msm_nand_flash_read_id(struct msm_nand_info *info,
 		bool read_onfi_signature,
 		uint32_t *read_id)
@@ -474,7 +483,6 @@ static int msm_nand_flash_read_id(struct msm_nand_info *info,
 	struct msm_nand_sps_cmd *cmd;
 	struct sps_iovec *iovec;
 	struct msm_nand_chip *chip = &info->nand_chip;
-	uint32_t total_cnt = 4;
 	/*
 	 * The following 4 commands are required to read id -
 	 * write commands - addr0, flash, exec
@@ -482,9 +490,9 @@ static int msm_nand_flash_read_id(struct msm_nand_info *info,
 	 */
 	struct {
 		struct sps_transfer xfer;
-		struct sps_iovec cmd_iovec[total_cnt];
-		struct msm_nand_sps_cmd cmd[total_cnt];
-		uint32_t data[total_cnt];
+		struct sps_iovec cmd_iovec[READID_CMDS];
+		struct msm_nand_sps_cmd cmd[READID_CMDS];
+		uint32_t data[READID_CMDS];
 	} *dma_buffer;
 
 	wait_event(chip->dma_wait_queue, (dma_buffer = msm_nand_get_dma_buffer
@@ -677,6 +685,7 @@ out:
  * complaint to ONFI spec or not. If yes, then it reads the ONFI parameter
  * page to get the device parameters.
  */
+#define ONFI_CMDS 9
 static int msm_nand_flash_onfi_probe(struct msm_nand_info *info)
 {
 	struct msm_nand_chip *chip = &info->nand_chip;
@@ -696,8 +705,6 @@ static int msm_nand_flash_onfi_probe(struct msm_nand_info *info)
 	struct msm_nand_flash_onfi_data data;
 	uint32_t onfi_signature = 0;
 
-	/* SPS command/data descriptors */
-	uint32_t total_cnt = 13;
 	/*
 	 * The following 13 commands are required to get onfi parameters -
 	 * flash, addr0, addr1, cfg0, cfg1, dev0_ecc_cfg, cmd_vld, dev_cmd1,
@@ -705,8 +712,8 @@ static int msm_nand_flash_onfi_probe(struct msm_nand_info *info)
 	 */
 	struct {
 		struct sps_transfer xfer;
-		struct sps_iovec cmd_iovec[total_cnt];
-		struct msm_nand_sps_cmd cmd[total_cnt];
+		struct sps_iovec cmd_iovec[ONFI_CMDS];
+		struct msm_nand_sps_cmd cmd[ONFI_CMDS];
 		uint32_t flash_status;
 	} *dma_buffer;
 
@@ -1295,15 +1302,15 @@ static int msm_nand_read_oob(struct mtd_info *mtd, loff_t from,
 	 * be sent for every CW - flash, read_location_0, read_location_1,
 	 * exec, flash_status and buffer_status.
 	 */
-	uint32_t total_cnt = (6 * cwperpage) + 6;
+	uint32_t cw_desc_count = 0;
 	struct {
 		struct sps_transfer xfer;
-		struct sps_iovec cmd_iovec[total_cnt];
-		struct msm_nand_sps_cmd cmd[total_cnt];
+		struct sps_iovec cmd_iovec[MAX_DESC];
+		struct msm_nand_sps_cmd cmd[MAX_DESC];
 		struct {
 			uint32_t flash_status;
 			uint32_t buffer_status;
-		} result[cwperpage];
+		} result[MAX_CW_PER_PAGE];
 	} *dma_buffer;
 
 	memset(&rw_params, 0, sizeof(struct msm_nand_rw_params));
@@ -1556,13 +1563,12 @@ static int msm_nand_write_oob(struct mtd_info *mtd, loff_t to,
 	 * The following 4 commands will be sent for every CW :
 	 * flash, exec, flash_status (read), flash_status (write).
 	 */
-	uint32_t total_cnt = (4 * cwperpage) + 7;
 	struct {
 		struct sps_transfer xfer;
-		struct sps_iovec cmd_iovec[total_cnt];
-		struct msm_nand_sps_cmd cmd[total_cnt];
+		struct sps_iovec cmd_iovec[MAX_DESC];
+		struct msm_nand_sps_cmd cmd[MAX_DESC];
 		struct {
-			uint32_t flash_status[cwperpage];
+			uint32_t flash_status[MAX_CW_PER_PAGE];
 		} data;
 	} *dma_buffer;
 
@@ -1732,6 +1738,7 @@ struct msm_nand_erase_reg_data {
  * Function that gets called from upper layers such as MTD/YAFFS2 to erase a
  * block within NAND device.
  */
+#define ERASE_CMDS 9
 static int msm_nand_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
 	int i, err = 0;
@@ -1749,8 +1756,8 @@ static int msm_nand_erase(struct mtd_info *mtd, struct erase_info *instr)
 	 */
 	struct {
 		struct sps_transfer xfer;
-		struct sps_iovec cmd_iovec[total_cnt];
-		struct msm_nand_sps_cmd cmd[total_cnt];
+		struct sps_iovec cmd_iovec[ERASE_CMDS];
+		struct msm_nand_sps_cmd cmd[ERASE_CMDS];
 		uint32_t flash_status;
 	} *dma_buffer;
 
@@ -1872,6 +1879,7 @@ struct msm_nand_blk_isbad_data {
  * checking whether the bad block byte location contains 0xFF or not. If it
  * doesn't contain 0xFF, then it is considered as bad block.
  */
+#define ISBAD_CMDS 9
 static int msm_nand_block_isbad(struct mtd_info *mtd, loff_t ofs)
 {
 	struct msm_nand_info *info = mtd->priv;
@@ -1882,7 +1890,6 @@ static int msm_nand_block_isbad(struct mtd_info *mtd, loff_t ofs)
 	struct msm_nand_sps_cmd *cmd, *curr_cmd;
 	struct msm_nand_blk_isbad_data data;
 	struct sps_iovec *iovec;
-	uint32_t total_cnt = 9;
 	/*
 	 * The following 9 commands are required to check bad block -
 	 * flash, addr0, addr1, cfg0, cfg1, ecc_cfg, read_loc_0,
@@ -1890,8 +1897,8 @@ static int msm_nand_block_isbad(struct mtd_info *mtd, loff_t ofs)
 	 */
 	struct {
 		struct sps_transfer xfer;
-		struct sps_iovec cmd_iovec[total_cnt];
-		struct msm_nand_sps_cmd cmd[total_cnt];
+		struct sps_iovec cmd_iovec[ISBAD_CMDS];
+		struct msm_nand_sps_cmd cmd[ISBAD_CMDS];
 		uint32_t flash_status;
 	} *dma_buffer;
 
@@ -2090,7 +2097,7 @@ int msm_nand_scan(struct mtd_info *mtd)
 		for (i = 0; !flashman && nand_manuf_ids[i].id; ++i)
 			if (nand_manuf_ids[i].id == manid)
 				flashman = &nand_manuf_ids[i];
-		for (i = 0; !flashdev && nand_flash_ids[i].id; ++i)
+		for (i = 0; !flashdev; ++i)
 			if (nand_flash_ids[i].id == devid)
 				flashdev = &nand_flash_ids[i];
 		if (!flashdev || !flashman) {
@@ -2485,7 +2492,7 @@ static int msm_nand_parse_smem_ptable(int *nr_parts)
 			(smem_get_entry(SMEM_AARM_PARTITION_TABLE, &len));
 	for (i = 0; i < ptable.numparts; i++) {
 		pentry = &ptable.part_entry[i];
-		if (pentry->name == '\0')
+		if (pentry->name == NULL)
 			continue;
 		/* Convert name to lower case and discard the initial chars */
 		mtd_part[i].name        = pentry->name;

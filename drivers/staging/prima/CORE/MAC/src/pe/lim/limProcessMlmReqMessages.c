@@ -3900,14 +3900,7 @@ limProcessMinChannelTimeout(tpAniSirGlobal pMac)
         {
             // This shouldn't be the case, but when this happens, this timeout should be for the last channelId. 
             // Get the channelNum as close to correct as possible.
-            if(pMac->lim.gpLimMlmScanReq->channelList.channelNumber)
-            {
-                channelNum = pMac->lim.gpLimMlmScanReq->channelList.channelNumber[pMac->lim.gpLimMlmScanReq->channelList.numChannels - 1];
-            }
-            else
-            {
-               channelNum = 1;
-            }
+            channelNum = pMac->lim.gpLimMlmScanReq->channelList.channelNumber[pMac->lim.gpLimMlmScanReq->channelList.numChannels - 1];
         }
 
         limLog(pMac, LOGW,
@@ -3976,14 +3969,7 @@ limProcessMaxChannelTimeout(tpAniSirGlobal pMac)
         }
         else
         {
-            if(pMac->lim.gpLimMlmScanReq->channelList.channelNumber)
-            {
-                channelNum = pMac->lim.gpLimMlmScanReq->channelList.channelNumber[pMac->lim.gpLimMlmScanReq->channelList.numChannels - 1];
-            }
-            else
-            {
-               channelNum = 1;
-            }
+            channelNum = pMac->lim.gpLimMlmScanReq->channelList.channelNumber[pMac->lim.gpLimMlmScanReq->channelList.numChannels - 1];
         }
         limLog(pMac, LOGW,
            FL("Sending End Scan req from MAX_CH_TIMEOUT in state %d on ch-%d"),
@@ -5051,8 +5037,8 @@ ePhyChanBondState limGet11ACPhyCBState(tpAniSirGlobal pMac, tANI_U8 channel, tAN
         return htSecondaryChannelOffset;
     }
 
-    if ( (htSecondaryChannelOffset 
-                 == PHY_DOUBLE_CHANNEL_LOW_PRIMARY)
+    if ( htSecondaryChannelOffset 
+                 == PHY_DOUBLE_CHANNEL_LOW_PRIMARY
        )
     {
         if ((channel + 2 ) == peerCenterChan )
@@ -5066,8 +5052,8 @@ ePhyChanBondState limGet11ACPhyCBState(tpAniSirGlobal pMac, tANI_U8 channel, tAN
                        FL("Invalid Channel Number = %d Center Chan = %d "),
                                  channel, peerCenterChan);
     }
-    if ( (htSecondaryChannelOffset 
-                 == PHY_DOUBLE_CHANNEL_HIGH_PRIMARY)
+    if ( htSecondaryChannelOffset 
+                 == PHY_DOUBLE_CHANNEL_HIGH_PRIMARY
        )
     {
         if ((channel - 2 ) == peerCenterChan )
