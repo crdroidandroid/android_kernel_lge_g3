@@ -1,9 +1,3 @@
-
-Skip to content
-Pull requests
-Issues
-Marketplace
-Explore
 VERSION = 3
 PATCHLEVEL = 4
 SUBLEVEL = 113
